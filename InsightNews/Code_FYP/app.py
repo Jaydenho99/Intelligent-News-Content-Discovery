@@ -29,7 +29,7 @@ CORS(app)
 
 # Mongo configuration
 client = MongoClient(
-    "mongodb+srv://jayden:Leonho31@atlascluster.hrjoukd.mongodb.net/?retryWrites=true&w=majority")
+    "*****")
 db_news = client['news-content']
 db_users_collection = db_news['user']
 
