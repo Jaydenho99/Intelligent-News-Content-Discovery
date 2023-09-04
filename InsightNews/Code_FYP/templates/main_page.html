@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width" , initial-scale="1.0">
+
+    <!--css file-->
+    <link rel="stylesheet" type="text/css" href="static\styles\style_main.css" />
+
+    <!--favicon-->
+    <link rel="shortcut-icon" href="static/image/favicon.svg" type="image/svg+xml">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <!--boxicon-->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
+    <title>InsightNews</title>
+</head>
+
+<body id="top">
+
+    <!--header-->
+    <header class="header" data-header>
+        <div class="container">
+            <div class="overlay" data-overlay></div>
+
+            <!--side navigation bar menu for filter-->
+            {% if session['username'] %}
+            <div class="menu-btn">
+                <ion-icon name='reorder-three'></ion-icon>
+            </div>
+            {% endif %}
+            <div class="side-bar">
+
+                <!--header sub-section-->
+                <header-sub>
+                    <!--close button-->
+                    <div class="close-btn">
+                        <ion-icon name="close-outline"></ion-icon>
+                    </div>
+
+                    <!--image-->
+                    <ion-icon name="person-circle-outline" class="user-image"></ion-icon>
+                    <h2 class="user-name"><strong>{{session['username']}}</strong></h2>
+                </header-sub>
+
+                <!--Side-menu Items Navigation for searching news contents-->
+                <div class="menu">
+                    <a href="#search" class="sub-btn">
+                        <ion-icon name="search-outline"></ion-icon>
+                        <p>Search</p>
+                        <span class="dropdown-icon">></span>
+                    </a>
+
+                    <!--User query-->
+                    <div class="sub-menu-drop" id="search">
+                        <form method="get" action="{{ url_for('search') }}" class="cta-form">
+                            <input type="text" placeholder="Search..." class="search-field" name="search-filter"
+                                required>
+                            <button type="submit" class="search-form-btn" name="filter-search"
+                                value="search">Search</button>
+                        </form>
+                    </div>
+
+                    <!--Filter by date-->
+                    <a href="#date" class="sub-btn">
+                        <ion-icon name="calendar-number-outline"></ion-icon>
+                        <p>Filter by Date</p>
+                        <span class="dropdown-icon">></span>
+                    </a>
+
+                    <div class="sub-menu-drop" id="date">
+                        <div class="arrange">
+                            <form method="get" action="{{url_for('search')}}">
+                                <label class="radio-label">
+                                    <input type="radio" class="radio-button" name="selection" value="Last 24 hours">Last
+                                    24 hours
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" class="radio-button" name="selection" value="By Weeks">By Weeks
+                                </label>
+                                <label class="radio-label">
+                                    <input type="radio" class="radio-button" name="selection" value="By Months">By
+                                    Months
+                                </label>
+                        </div>
+                    </div>
+
+                    <!--Filter by category-->
+                    <a href="#category" class="sub-btn">
+                        <ion-icon name="newspaper-outline"></ion-icon>
+                        <p>Filter by Category</p>
+                        <span class="dropdown-icon">></span>
+                    </a>
+
+                    <div class="sub-menu-drop" id="category">
+                        <div class="arrange">
+                            <label class="checkbox-label">
+                                <input type="checkbox" class="checkbox-button" name="selection_box" value="top">Top
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" class="checkbox-button" name="selection_box"
+                                    value="TOPSTORY">TopStory
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" class="checkbox-button" name="selection_box"
+                                    value="NEWS/NATION">News/Nation
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" class="checkbox-button" name="selection_box"
+                                    value="MALAYSIA">Malaysia
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" class="checkbox-button" name="selection_box" value="MONEY">Money
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" class="checkbox-button" name="selection_box"
+                                    value="business">Business
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" class="checkbox-button" name="selection_box"
+                                    value="SPORTS">Sports
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" class="checkbox-button" name="selection_box"
+                                    value="Twitter">Twitter
+                            </label>
+                        </div>
+                    </div>
+                    <button type="submit" class="filter-btn" name="filter_category_date" value="filter">Filter</button>
+                    </form>
+                </div>
+            </div>
+
+            <a href="{{url_for('home')}}" class="logo">
+                <img src="static/image/insight-logo.png" class="web-logo" alt="Logo">
+            </a>
+
+            <div class="header-actions">
+                {% if not session['username'] %}
+                <a href="{{url_for('authenticate')}}">
+                    <button class="btn btn-primary">Sign In</button>
+                </a>
+                {% else %}
+                <ion-icon name="person-circle-outline" class="user-pic" onclick="toggleMenu()"></ion-icon>
+
+                <div class="sub-menu-wrap" id="subMenu">
+                    <div class="sub-menu">
+                        <div class="user-info">
+                            <ion-icon name="person-circle-outline"></ion-icon>
+                            <h2 class="user-name"><strong>{{session['username']}}</strong></h2>
+                        </div>
+                        <hr>
+
+                        <a href="{{ url_for('profile')}}" class="sub-menu-link">
+                            <ion-icon name="person-outline"></ion-icon>
+                            <p>User Profile</p>
+                            <span><ion-icon name="chevron-forward-outline"></ion-icon></span>
+                        </a>
+
+                        <a href="{{url_for('library')}}" class="sub-menu-link">
+                            <ion-icon name="library-outline"></ion-icon>
+                            <p>My Library</p>
+                            <span><ion-icon name="chevron-forward-outline"></ion-icon></span>
+                        </a>
+
+                        <a href="{{ url_for('logout')}}" class="sub-menu-link">
+                            <ion-icon name="log-out-outline"></ion-icon>
+                            <p>Logout</p>
+                            <span><ion-icon name="chevron-forward-outline"></ion-icon></span>
+                        </a>
+
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+
+            <button class="menu-open-btn" data-menu-open-btn>
+                <ion-icon name='reorder-two'></ion-icon>
+            </button>
+
+            <!--Navigation bar-->
+            <nav class="navbar" data-navbar>
+                <div class="navbar-top">
+                    <a href="main_page.html" class="logo">
+                        <img src="static/image/images/logo.svg" alt="InsightNews Logo">
+                    </a>
+
+                    <button class="menu-close-btn" data-menu-close-btn>
+                        <ion-icon name="close-outline"></ion-icon>
+                    </button>
+                </div>
+
+                <ul class="navbar-list">
+                    <li>
+                        <a href="{{url_for('home')}}" class="navbar-link">Home</a>
+                    </li>
+
+                    <li>
+                        <a href="{{url_for('keyword')}}" class="navbar-link">Discover Keyword/Phrases</a>
+                    </li>
+
+                    <li>
+                        <a href="#topic" class="navbar-link">Discover Topics</a>
+                        <ul class="dropdown">
+                            <li><a href="{{url_for('topic_visualize')}}">Topic Analysis Visualization ></a></li>
+                            <li><a href="{{url_for('topic')}}">Trending Tweets by Topics ></a></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a href="#multi-view" class="navbar-link">View Multi-Perspective Sentiment ▾</a>
+                        <ul class="dropdown">
+                            <li><a href="{{url_for('sentiment')}}">Topic Sentiment ></a></li>
+                            <li><a href="{{url_for('sentiment_comparison')}}">Topic Sentiment Comparison ></a></li>
+                        </ul>
+
+                    </li>
+                </ul>
+
+            </nav>
+        </div>
+
+        <!--Display successful and error messages-->
+        {% for category,message in get_flashed_messages(with_categories=true) %}
+        {% if message %}
+        <div class="alert-{{category}}">
+            <span>{{message}}</span>
+            <button class="exit-btn">
+                <ion-icon name="close-outline"></ion-icon>
+            </button>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </header>
+
+
+    <main>
+        <article>
+            <!--hero section with image slider-->
+            <section class="img-slider">
+                <div class="slide active1">
+                    <img src="../static/image/hero-bg.jpg" alt="hero">
+                    <div class="hero-content">
+                        <p class="hero-subtitle">
+                            InsightNews
+                        </p>
+                        <h1 class="h1 hero-title">
+                            <strong>Intelligent</strong> News Content Discovery System
+                        </h1>
+
+                        <a href="#current">
+                            <button class="btn btn-primary">
+                                <ion-icon name="book-outline"></ion-icon>
+                                <span>Read Now</span>
+                            </button>
+                        </a>
+                    </div>
+                </div>
+                {% for news in highlights_news %}
+                <div class="slide">
+                    <img src="{{news['newsImageURL']}}"
+                        onerror="this.onerror=null; this.src='static/image/insightnews-logo-dark.png'"
+                        alt="{{news['newsTitle']}}">
+                    <div class="hero-content-news">
+                        <h2 class="h2 hero-title">
+                            {{news['newsTitle']}}
+                        </h2>
+                        <div class="meta-wrapper">
+
+                            <div class="badge-wrapper">
+                                <div class="badge badge-fill">{{news['newsType']}}</div>
+                                <div class="badge badge-outline">{{news['newsCategory']}}</div>
+                            </div>
+
+                            <div class="date-time">
+                                <div>
+                                    <ion-icon name="time-outline"></ion-icon>
+                                    <time datetime="PT137M">{{news['time_ago']}}</time>
+                                </div>
+
+                                <div>
+                                    <ion-icon name="happy-outline"></ion-icon>
+                                    <data>{{news['sentiment']}}</data>
+                                </div>
+
+                                {% if news['newsTrendingScore'] %}
+                                <div>
+                                    <ion-icon name="star"></ion-icon>
+                                    <data>{{news['newsTrendingScore']}}</data>
+                                </div>
+                                {% endif %}
+
+                                {% if news['newsType']=="Tweets" %}
+                                <div>
+                                    <ion-icon name="heart"></ion-icon>
+                                    <data>{{news['favorite_count']}}</data>
+                                </div>
+
+                                <div>
+                                    <ion-icon name="sync-outline"></ion-icon>
+                                    <data>{{news['retweet_count']}}</data>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if news['newsType']!="Tweets" %}
+                        <p class="storyline">
+                            {{news['newsContent']}}
+                        </p>
+                        {% endif %}
+
+                        <a href="{{ url_for('news_details',name=news['newsTitle'])}}">
+                            <button class="btn btn-primary">
+                                <ion-icon name="book-outline"></ion-icon>
+                                <span>Read More...</span>
+                            </button>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+                <div class="navigation">
+                    <div class="small-btn active1"></div>
+                    {% for news in highlights_news %}
+                    <div class="small-btn"></div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <!--Current News Contents-->
+            <section class="upcoming" id="current">
+
+                <!--Local News Contents-->
+                <div class="container">
+                    <div class="flex-wrapper">
+                        <div class="title-wrapper">
+                            <p class="section-subtitle">Trending Latest News</p>
+                            <h2 class="h2 section-title">Local News</h2>
+                        </div>
+                    </div>
+
+                    <ul class="movies-list has-scrollbar">
+
+                        {% for news in current_news_local %}
+                        <li>
+                            <div class="movie-card">
+                                <a href="{{ url_for('news_details',name=news['newsTitle'])}}">
+                                    <figure class="card-banner">
+                                        <img src="{{news['newsImageURL']}}"
+                                            onerror="this.onerror=null; this.src='static/image/insightnews-high-resolution-color-logo.png'"
+                                            alt="{{news['newsTitle']}}">
+                                    </figure>
+                                </a>
+
+                                <div class="title-wrapper">
+                                    <a href="{{ url_for('news_details',name=news['newsTitle'])}}">
+                                        <h3 class="card-title">{{news['newsTitle']}}</h3>
+                                    </a>
+
+                                    <time datetime="2022">{{news['newsYearPublished']}}</time>
+                                </div>
+
+                                <div class="card-meta">
+                                    <div class="badge badge-outline">{{news['newsCategory']}}</div>
+
+                                    <div class="bookmark-section">
+                                        {% if session['username'] %}
+                                        <form method="post">
+                                            <input type="hidden" name="bookmark-main" value="{{news['newsTitle']}}">
+                                            <button type="submit" class="btn btn-primary" name="bookmark-btn">
+                                                <ion-icon name="bookmark-outline"></ion-icon>
+                                                <span>Bookmark</span>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="card-meta-bot">
+                                    <div class="duration">
+                                        <ion-icon name="time-outline"></ion-icon>
+                                        <time datetime="PT137M">{{news['time_ago']}}</time>
+                                    </div>
+
+                                    {% if news['sentiment'] %}
+                                    <div class="rating">
+                                        <ion-icon name="happy-outline"></ion-icon>
+                                        <data>{{news['sentiment']}}</data>
+                                    </div>
+                                    {% endif %}
+
+                                    {% if news['newsTrendingScore'] %}
+                                    <div class="rating">
+                                        <ion-icon name="star"></ion-icon>
+                                        <data>{{news['newsTrendingScore']}}</data>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+
+                    </ul>
+                </div>
+
+                <!--International News Contents-->
+                <div class="container">
+                    <div class="flex-wrapper">
+                        <div class="title-wrapper">
+                            <p class="section-subtitle">Trending Latest News</p>
+                            <h2 class="h2 section-title">International News</h2>
+                        </div>
+                    </div>
+
+                    <ul class="movies-list has-scrollbar">
+                        {% for news in current_news_international %}
+                        <li>
+                            <div class="movie-card">
+                                <a href="{{ url_for('news_details',name=news['newsTitle'])}}">
+                                    <figure class="card-banner">
+                                        <img src="{{news['newsImageURL']}}"
+                                            onerror="this.onerror=null; this.src='static/image/insightnews-high-resolution-color-logo.png'"
+                                            alt="{{news['newsTitle']}}">
+                                    </figure>
+                                </a>
+
+                                <div class="title-wrapper">
+                                    <a href="{{ url_for('news_details',name=news['newsTitle'])}}">
+                                        <h3 class="card-title">{{news['newsTitle']}}</h3>
+                                    </a>
+
+                                    <time datetime="2022">{{news['newsYearPublished']}}</time>
+                                </div>
+
+                                <div class="card-meta">
+                                    <div class="badge badge-outline">{{news['newsCategory']}}</div>
+
+                                    <div class="bookmark-section">
+                                        {% if session['username'] %}
+                                        <form method="post">
+                                            <input type="hidden" name="bookmark-main" value="{{news['newsTitle']}}">
+                                            <button type="submit" class="btn btn-primary" name="bookmark-btn">
+                                                <ion-icon name="bookmark-outline"></ion-icon>
+                                                <span>Bookmark</span>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="card-meta-bot">
+                                    <div class="duration">
+                                        <ion-icon name="time-outline"></ion-icon>
+                                        <time datetime="PT137M">{{news['time_ago']}}</time>
+                                    </div>
+
+                                    {% if news['sentiment'] %}
+
+                                    <div class="rating">
+                                        <ion-icon name="happy-outline"></ion-icon>
+                                        <data>{{news['sentiment']}}</data>
+                                    </div>
+
+                                    {% endif %}
+
+                                    {% if news['newsTrendingScore'] %}
+                                    <div class="rating">
+                                        <ion-icon name="star"></ion-icon>
+                                        <data>{{news['newsTrendingScore']}}</data>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+
+                    </ul>
+                </div>
+
+                <!--Tweets News Contents-->
+                <div class="container">
+                    <div class="flex-wrapper">
+                        <div class="title-wrapper">
+                            <p class="section-subtitle">Trending Latest News</p>
+                            <h2 class="h2 section-title">Tweets News</h2>
+                        </div>
+                    </div>
+
+                    <ul class="movies-list has-scrollbar">
+                        {% for news in unique_results %}
+                        <li>
+                            <div class="movie-card">
+                                <a href="{{ url_for('news_details',name=news['newsTitle'])}}">
+                                    <figure class="card-banner">
+                                        <img src="{{news['newsImageURL']}}"
+                                            onerror="this.onerror=null; this.src='static/image/insightnews-high-resolution-color-logo.png'"
+                                            alt="{{news['newsTitle']}}">
+                                    </figure>
+                                </a>
+
+                                <div class="title-wrapper">
+                                    <a href="{{ url_for('news_details',name=news['newsTitle'])}}">
+                                        <h3 class="card-title">{{news['newsTitle']}}</h3>
+                                    </a>
+
+                                    <time datetime="2022">{{news['newsYearPublished']}}</time>
+                                </div>
+
+                                <div class="card-meta">
+                                    <div class="badge badge-outline">{{news['newsType']}}</div>
+
+                                    <div class="bookmark-section">
+                                        {% if session['username'] %}
+                                        <form method="post">
+                                            <input type="hidden" name="bookmark-main" value="{{news['newsTitle']}}">
+                                            <button type="submit" class="btn btn-primary" name="bookmark-btn">
+                                                <ion-icon name="bookmark-outline"></ion-icon>
+                                                <span>Bookmark</span>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="card-meta-bot">
+                                    <div class="duration">
+                                        <ion-icon name="time-outline"></ion-icon>
+                                        <time datetime="PT137M">{{news['time_ago']}}</time>
+                                    </div>
+
+                                    {% if news['sentiment'] %}
+
+                                    <div class="rating">
+                                        <ion-icon name="happy-outline"></ion-icon>
+                                        <data>{{news['sentiment']}}</data>
+                                    </div>
+
+                                    {% endif %}
+
+                                    {% if news['newsTrendingScore'] %}
+
+                                    <div class="rating">
+                                        <ion-icon name="star"></ion-icon>
+                                        <data>{{news['newsTrendingScore']}}</data>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </section>
+
+            <!--Recent News Content based on Category-->
+            <section class="category-slider">
+                <div class="title-wrapper">
+                    <p class="section-subtitle">Trending Latest News</p>
+                    <h2 class="h2 section-title">Latest News by Category</h2>
+                </div>
+
+                <div class="category-slide">
+
+                    <!--Business category-->
+                    <div class="box">
+                        <div class="category-title">
+                            <a href="{{ url_for('search', selection_box='business', filter_category_date='filter') }}">
+                                <h2>Business</h2>
+                            </a>
+                            <span><ion-icon name="chevron-forward-outline"></ion-icon></span>
+                        </div>
+
+                        <div class="divider"></div>
+
+                        {% for news in result_category['Business'] %}
+                        <div class="news-container">
+                            <div class="header-container">
+
+                                <div class="header-news-title">
+                                    <a href="{{ url_for('news_details',name=news['newsTitle'])}}">
+                                        <div class="title-category">{{news['newsTitle']}}</div>
+                                    </a>
+                                </div>
+
+                                <div class="footer-date">
+                                    {{news['time_ago']}}
+                                </div>
+
+                                <div class="divider"></div>
+                            </div>
+
+                            <div class="image-right-container">
+                                <img src="{{news['newsImageURL']}}" alt="" class="top-img">
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!--Malaysia category-->
+                    <div class="box">
+                        <div class="category-title">
+
+                            <a href="{{ url_for('search', selection_box='MALAYSIA', filter_category_date='filter') }}">
+                                <h2>Malaysia</h2>
+                            </a>
+                            <span><ion-icon name="chevron-forward-outline"></ion-icon></span>
+                        </div>
+
+                        <div class="divider"></div>
+
+                        {% for news in result_category['Malaysia'] %}
+                        <div class="news-container">
+                            <div class="header-container">
+
+                                <div class="header-news-title">
+                                    <a href="{{ url_for('news_details',name=news['newsTitle'])}}">
+                                        <div class="title-category">{{news['newsTitle']}}</div>
+                                    </a>
+                                </div>
+
+                                <div class="footer-date">
+                                    {{news['time_ago']}}
+                                </div>
+
+                                <div class="divider"></div>
+                            </div>
+
+                            <div class="image-right-container">
+                                <img src="{{news['newsImageURL']}}" alt="" class="top-img">
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="category-slide">
+
+                    <!--Money category-->
+                    <div class="box">
+                        <div class="category-title">
+
+                            <a href="{{ url_for('search', selection_box='MONEY', filter_category_date='filter') }}">
+                                <h2>Money</h2>
+                            </a>
+                            <span><ion-icon name="chevron-forward-outline"></ion-icon></span>
+                        </div>
+
+                        <div class="divider"></div>
+
+                        {% for news in result_category['Money'] %}
+                        <div class="news-container">
+                            <div class="header-container">
+
+                                <div class="header-news-title">
+                                    <a href="{{ url_for('news_details',name=news['newsTitle'])}}">
+                                        <div class="title-category">{{news['newsTitle']}}</div>
+                                    </a>
+                                </div>
+
+                                <div class="footer-date">
+                                    {{news['time_ago']}}
+                                </div>
+
+                                <div class="divider"></div>
+                            </div>
+
+                            <div class="image-right-container">
+                                <img src="{{news['newsImageURL']}}" alt="" class="top-img">
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="box">
+
+                        <!--Sports category-->
+                        <div class="category-title">
+                            <a href="{{ url_for('search', selection_box='SPORTS', filter_category_date='filter') }}">
+                                <h2>Sports</h2>
+                            </a>
+                            <span><ion-icon name="chevron-forward-outline"></ion-icon></span>
+                        </div>
+
+                        <div class="divider"></div>
+
+                        {% for news in result_category['Sports'] %}
+                        <div class="news-container">
+                            <div class="header-container">
+
+                                <div class="header-news-title">
+                                    <a href="{{ url_for('news_details',name=news['newsTitle'])}}">
+                                        <div class="title-category">{{news['newsTitle']}}</div>
+                                    </a>
+                                </div>
+
+                                <div class="footer-date">
+                                    {{news['time_ago']}}
+                                </div>
+
+                                <div class="divider"></div>
+                            </div>
+
+                            <div class="image-right-container">
+                                <img src="{{news['newsImageURL']}}" alt="" class="top-img">
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </section>
+
+            <!--Most Popular News section-->
+            <section class="top-rated">
+                <div class="container">
+                    <p class="section-subtitle">Trending News</p>
+                    <h2 class="h2 section-title">Most Popular News</h2>
+
+                    <ul class="movies-list">
+                        {% set count = 0 %}
+                        {% for news2 in popular_news_info %}
+                        {% if count < 8 %} <li>
+                            <div class="movie-card">
+                                <a href="{{ url_for('news_details',name=news2['newsTitle'])}}">
+                                    <figure class="card-banner">
+                                        <img src="{{news2['newsImageURL']}}"
+                                            onerror="this.onerror=null; this.src='static/image/insightnews-high-resolution-color-logo.png'"
+                                            alt="{{news2['newsTitle']}}">
+
+                                    </figure>
+                                </a>
+
+                                <div class="title-wrapper">
+                                    <a href="{{ url_for('news_details',name=news2['newsTitle'])}}">
+                                        <h3 class="card-title">{{news2['newsTitle']}}</h3>
+                                    </a>
+
+                                    <time datetime="2022">{{news2['newsYearPublished']}}</time>
+                                </div>
+
+                                <div class="card-meta">
+                                    <div class="badge badge-outline">{{news2['newsCategory']}}</div>
+
+                                    <div class="bookmark-section">
+                                        {% if session['username'] %}
+                                        <form method="post">
+                                            <input type="hidden" name="bookmark-main" value="{{news2['newsTitle']}}">
+                                            <button type="submit" class="btn btn-primary" name="bookmark-btn">
+                                                <ion-icon name="bookmark-outline"></ion-icon>
+                                                <span>Bookmark</span>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="card-meta-bot">
+                                    <div class="duration">
+                                        <ion-icon name="time-outline"></ion-icon>
+                                        <time datetime="PT137M">{{news2['time_ago']}}</time>
+                                    </div>
+
+                                    {% if news2['sentiment'] %}
+
+                                    <div class="rating">
+                                        <ion-icon name="happy-outline"></ion-icon>
+                                        <data>{{news2['sentiment']}}</data>
+                                    </div>
+
+                                    {% endif %}
+
+                                    {% if news2['newsTrendingScore'] %}
+                                    <div class="rating">
+                                        <ion-icon name="star"></ion-icon>
+                                        <data>{{news2['newsTrendingScore']}}</data>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            </li>
+                            {% endif %}
+                            {% set count = count + 1 %}
+                            {% endfor %}
+
+                    </ul>
+
+                    <button id="load-more-btn">Load More</button>
+                </div>
+            </section>
+
+            <!--Recommended Reading section-->
+            <section class="tv-series">
+                <div class="container">
+
+                    <p class="section-subtitle">Trending News</p>
+                    <h2 class="h2 section-title">Recommended Reading</h2>
+
+                    <ul class="movies-list">
+                        {% for news3 in recommend_news_info %}
+
+                        <li>
+                            <div class="movie-card">
+                                <a href="{{ url_for('news_details',name=news3['newsTitle'])}}">
+                                    <figure class="card-banner">
+                                        <img src="{{news3['newsImageURL']}}"
+                                            onerror="this.onerror=null; this.src='static/image/insightnews-high-resolution-color-logo.png'"
+                                            alt="{{news3['newsTitle']}}">
+
+                                    </figure>
+                                </a>
+
+                                <div class="title-wrapper">
+                                    <a href="{{ url_for('news_details',name=news3['newsTitle'])}}">
+                                        <h3 class="card-title">{{news3['newsTitle']}}</h3>
+                                    </a>
+
+                                    <time datetime="2022">{{news3['newsYearPublished']}}</time>
+                                </div>
+
+                                <div class="card-meta">
+                                    <div class="badge badge-outline">{{news3['newsCategory']}}</div>
+
+                                    <div class="bookmark-section">
+                                        {% if session['username'] %}
+                                        <form method="post">
+                                            <input type="hidden" name="bookmark-main" value="{{news3['newsTitle']}}">
+                                            <button type="submit" class="btn btn-primary" name="bookmark-btn">
+                                                <ion-icon name="bookmark-outline"></ion-icon>
+                                                <span>Bookmark</span>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+
+                                </div>
+
+                                <div class="card-meta-bot">
+                                    <div class="duration">
+                                        <ion-icon name="time-outline"></ion-icon>
+                                        <time datetime="PT137M">{{news3['time_ago']}}</time>
+                                    </div>
+
+                                    {% if news3['sentiment'] %}
+
+                                    <div class="rating">
+                                        <ion-icon name="happy-outline"></ion-icon>
+                                        <data>{{news3['sentiment']}}</data>
+                                    </div>
+
+                                    {% endif %}
+
+                                    {% if news3['newsTrendingScore'] %}
+
+                                    <div class="rating">
+                                        <ion-icon name="star"></ion-icon>
+                                        <data>{{news3['newsTrendingScore']}}</data>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+
+                    </ul>
+                </div>
+            </section>
+        </article>
+    </main>
+
+    <!--Footer-->
+    <footer class="footer">
+        <div class="footer-top">
+            <div class="container">
+                <div class="footer-brand-wrapper">
+                    <a href="{{url_for('home')}}" class="logo">
+                        <img src="static/image/insight-logo.png" class="web-logo" alt="Logo">
+                    </a>
+
+                    <ul class="footer-list">
+                        <li>
+                            <a href="{{url_for('home')}}" class="footer-link">Home</a>
+                        </li>
+
+                        <li>
+                            <a href="{{url_for('keyword')}}" class="navbar-link">Discover Keyword/Phrases</a>
+                        </li>
+
+                        <li>
+                            <a href="#topic" class="navbar-link">Discover Topics</a>
+                            <ul class="dropdown">
+                                <li><a href="{{url_for('topic_visualize')}}">Topic Analysis Visualization ></a></li>
+                                <li><a href="{{url_for('topic')}}">Trending Tweets by Topics ></a></li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            <a href="#multi-view" class="navbar-link">View Multi-Perspective Sentiment ▾</a>
+                            <ul class="dropdown">
+                                <li><a href="{{url_for('sentiment')}}">Topic Sentiment ></a></li>
+                                <li><a href="{{url_for('sentiment_comparison')}}">Topic Sentiment Comparison ></a></li>
+                            </ul>
+
+                        </li>
+
+                    </ul>
+                </div>
+
+                <div class="divider"></div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div class="container">
+                <p class="copyright">
+                    &copy; 2023 <a href="#">Ho Khum Leon</a>. All Rights Reserved
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!--Go To Top-->
+    <a href="#top" class="go-top" data-go-top>
+        <ion-icon name="chevron-up"></ion-icon>
+    </a>
+
+    <!--js script-->
+    <script src="../static/js/script_main.js"></script>
+
+
+    <!--JQuery CDN link-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+
+    <!--js script for profile sub-menu-->
+    <script>
+        let subMenu = document.getElementById("subMenu");
+        function toggleMenu() {
+            subMenu.classList.toggle("open-menu")
+        }
+    </script>
+
+    <script>
+        $(document).ready(function () {
+
+            //jquery to expand and collapse the sidebar
+            $('.menu-btn').click(function () {
+                $('.side-bar').addClass('active');
+                $('.menu-btn').css("visibility", "hidden");
+            });
+
+            // close button
+            $('.close-btn').click(function () {
+                $('.side-bar').removeClass('active');
+                $('.menu-btn').css("visibility", "visible");
+            });
+
+            //toggle sub-menus
+            $('.sub-btn').click(function () {
+                $(this).next('.sub-menu-drop').slideToggle();
+                $(this).find('dropdown-icon').toggle('rotate');
+            });
+        })
+    </script>
+
+    <script>
+        // close flash message
+        $('.exit-btn').click(function () {
+            $('.alert-warning').addClass('active');
+            $('.alert-success').addClass('active');
+        });
+
+        // set timeout for flash message
+        setTimeout(function () {
+            $('.alert-warning').fadeOut('slow');
+            $('.alert-success').fadeOut('slow');
+        }, 30000); //30 seconds
+
+    </script>
+
+    <script>
+        // modify the current browser's URL without triggering a page reload
+        if (window.history.replaceState) {
+            window.history.replaceState(null, null, window.location.href);
+        }
+    </script>
+
+    <script>
+        // Javascript for image slider autoplay navigation
+        var slides = document.querySelectorAll('.slide');
+        var btns = document.querySelectorAll('.small-btn');
+        let currentSlide = 1;
+
+        var manualNav = function (manual) {
+            slides.forEach((slide) => {
+                slide.classList.remove('active1');
+
+                btns.forEach((btn) => {
+                    btn.classList.remove('active1');
+                });
+            });
+
+            slides[manual].classList.add('active1');
+            btns[manual].classList.add('active1');
+        }
+        btns.forEach((btn, i) => {
+            btn.addEventListener("click", () => {
+                manualNav(i);
+                currentSlide = i;
+            });
+        });
+
+        var repeat = function (activeClass) {
+            let active = document.getElementsByClassName('active1');
+            let i = 1;
+
+            // move to next slider after 10 seconds
+            var repeater = () => {
+                setTimeout(function () {
+                    [...active].forEach((activeSlide) => {
+                        activeSlide.classList.remove('active1');
+                    });
+
+                    slides[i].classList.add('active1');
+                    btns[i].classList.add('active1');
+                    i++;
+
+                    if (slides.length == i) {
+                        i = 0;
+                    }
+
+                    if (i >= slides.length) {
+                        return;
+                    }
+
+                    repeater();
+
+                }, 10000); // 10 seconds
+            }
+            repeater();
+        }
+        repeat();
+
+    </script>
+
+
+    <script>
+        // Javascript for popular news contents pagination
+        const loadMoreBtn = document.querySelector("#load-more-btn");
+        const moviesList = document.querySelector(".top-rated .container .movies-list");
+        const movieCards = document.querySelectorAll(".top-rated .container .movie-card");
+        const resultsPerPage = 8;
+        let visibleCount = resultsPerPage;
+
+        if (moviesList) {
+            // Hide all movie cards that are not in the first page
+            for (let i = visibleCount; i < movieCards.length; i++) {
+                movieCards[i].style.display = "none";
+            }
+        }
+
+        loadMoreBtn.addEventListener("click", () => {
+            for (let i = visibleCount; i < visibleCount + resultsPerPage; i++) {
+                if (i < movieCards.length) {
+                    movieCards[i].style.display = "grid";
+                }
+            }
+            visibleCount += resultsPerPage;
+            if (visibleCount >= movieCards.length) {
+                loadMoreBtn.style.display = "none";
+            }
+        });
+    </script>
+
+
+    <!--ionicons-->
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+</body>
+
+</html>

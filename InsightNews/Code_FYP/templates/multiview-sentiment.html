@@ -1,0 +1,1700 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width" , initial-scale="1.0">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <!--css file-->
+    <link rel="stylesheet" type="text/css" href="static\styles\style_main.css" />
+
+    <!--favicon-->
+    <link rel="shortcut-icon" href="static/image/favicon.svg" type="image/svg+xml">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <!--boxicon-->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+
+    <title>Topic Analysis</title>
+</head>
+
+<body id="top">
+
+    <!--header-->
+    <header class="header" data-header>
+        <div class="container">
+            <div class="overlay" data-overlay></div>
+            <a href="{{url_for('home')}}" class="logo">
+                <img src="static/image/insight-logo.png" class="web-logo" alt="Logo">
+            </a>
+
+            <div class="header-actions">
+                {% if not session['username'] %}
+                <a href="{{url_for('authenticate')}}">
+                    <button class="btn btn-primary">Sign In</button>
+                </a>
+                {% else %}
+                <ion-icon name="person-circle-outline" class="user-pic" onclick="toggleMenu()"></ion-icon>
+
+                <div class="sub-menu-wrap" id="subMenu">
+                    <div class="sub-menu">
+                        <div class="user-info">
+                            <ion-icon name="person-circle-outline"></ion-icon>
+                            <h2 class="user-name"><strong>{{session['username']}}</strong></h2>
+                        </div>
+                        <hr>
+
+                        <a href="{{ url_for('profile')}}" class="sub-menu-link">
+                            <ion-icon name="person-outline"></ion-icon>
+                            <p>User Profile</p>
+                            <span><ion-icon name="chevron-forward-outline"></ion-icon></span>
+                        </a>
+
+                        <a href="{{url_for('library')}}" class="sub-menu-link">
+                            <ion-icon name="library-outline"></ion-icon>
+                            <p>My Library</p>
+                            <span><ion-icon name="chevron-forward-outline"></ion-icon></span>
+                        </a>
+
+                        <a href="{{ url_for('logout')}}" class="sub-menu-link">
+                            <ion-icon name="log-out-outline"></ion-icon>
+                            <p>Logout</p>
+                            <span><ion-icon name="chevron-forward-outline"></ion-icon></span>
+                        </a>
+
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+
+            <button class="menu-open-btn" data-menu-open-btn>
+                <ion-icon name='reorder-two'></ion-icon>
+            </button>
+
+            <!--Navigation bar-->
+            <nav class="navbar" data-navbar>
+                <div class="navbar-top">
+                    <a href="main_page.html" class="logo">
+                        <img src="static/image/images/logo.svg" alt="InsightNews Logo">
+                    </a>
+
+                    <button class="menu-close-btn" data-menu-close-btn>
+                        <ion-icon name="close-outline"></ion-icon>
+                    </button>
+                </div>
+
+                <ul class="navbar-list">
+                    <li>
+                        <a href="{{url_for('home')}}" class="navbar-link">Home</a>
+                    </li>
+
+                    <li>
+                        <a href="{{url_for('keyword')}}" class="navbar-link">Discover Keyword/Phrases</a>
+                    </li>
+
+                    <li>
+                        <a href="#topic" class="navbar-link">Discover Topics</a>
+                        <ul class="dropdown">
+                            <li><a href="{{url_for('topic_visualize')}}">Topic Analysis Visualization ></a></li>
+                            <li><a href="{{url_for('topic')}}">Trending Tweets by Topics ></a></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a href="#multi-view" class="navbar-link">View Multi-Perspective Sentiment ▾</a>
+                        <ul class="dropdown">
+                            <li><a href="{{url_for('sentiment')}}">Topic Sentiment ></a></li>
+                            <li><a href="{{url_for('sentiment_comparison')}}">Topic Sentiment Comparison ></a></li>
+                        </ul>
+
+                    </li>
+                </ul>
+
+            </nav>
+        </div>
+
+        <!--Display successful and error messages-->
+        {% for category,message in get_flashed_messages(with_categories=true) %}
+        {% if message %}
+        <div class="alert-{{category}}">
+            <span>{{message}}</span>
+            <button class="exit-btn">
+                <ion-icon name="close-outline"></ion-icon>
+            </button>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </header>
+
+    <main>
+        <article>
+            <section class="multi-view">
+                <div class="container">
+                    <div class="title-wrapper">
+                        <p class="section-subtitle">Topic Sentiment for News Articles & Tweets</p>
+                        <h2 class="h2 section-title">Discover Multi-Perspective View Sentiment</h2>
+                    </div>
+
+                    <!--Filter one topic and date ranges-->
+                    <form method="get" action = "{{url_for('sentiment')}}">
+                        <div class="filter-form">
+                            <div class="full-view">
+                                <div class="search-row">
+                                <div class="search-col">
+                                  
+                                    <label for="topic-select">Topic Options:</label>
+                                    <select id="topic-select" name="select_topic">
+                                    <option value=""></option>
+                                    {% if dropdown_result %}
+                                      {% for option in dropdown_result %}
+                                    <option value="{{option['topic']}}">{{option['topic']|title}}</option>
+                                      {% endfor %}
+                                     {% endif %}
+                                    </select>
+                                </div>
+                                <div class="search-col">
+                                    <label for="start-date">Start Date:</label>
+                                    <input type="date" id="start-date" name="start-date" value="{{start_date}}">
+                                </div>
+                                <div class="search-col">
+                                    <label for="end-date">End Date:</label>
+                                    <input type="date" id="end-date" name="end-date" value="{{end_date}}">
+                                </div>
+                                <div class="search-col">
+                                    <button type="submit" class="filter-form-btn" name="filter_topic" value="topic">Filter</button>
+                                </div>
+                                </div>
+                             
+                            </div>
+                    </form>     
+                </div>
+                     
+                       
+
+                    <div class="full-view-diagram">
+                    {% for i in recommend %}
+                    <div class="container-box">
+                      {% if selection_topic %}
+                      <h2 class="sentiment-search">Filter Topic: {{selection_topic|title}} from {{start_date|format_date('%d %b %Y')}} to {{end_date|format_date('%d %b %Y')}}</h2>
+                      {% endif %}
+                        <h1 class="level-1 rectangle">
+                            {{i['topic']|title}}
+
+                                 <!--Gauge Meter-->
+                                <div class="graphBoxGauge">
+                                    <canvas id="chartGauge"></canvas>                                   
+                                </div>
+                                <script>
+                                    
+                                    const data2 = [
+                                        {{ i.sentiments.Positive.total_count_sentiment if i.sentiments.Positive else 0 }},
+                                        {{ i.sentiments.Neutral.total_count_sentiment if i.sentiments.Neutral else 0 }},
+                                        {{ i.sentiments.Negative.total_count_sentiment if i.sentiments.Negative else 0 }}
+                                    ];
+                                    
+                                    
+
+                                    var totalCount = data2.reduce((acc, val) => acc + parseFloat(val), 0);
+                                    var percentageData = data2.map(val => (parseFloat(val) / totalCount) * 100);
+                                    var total_count_data = {                                               
+                                        labels: [
+                                            'Positive','Neutral','Negative'
+                                        ],
+                                        datasets: [{
+                                            label: ' Percent Dist',
+                                            data: percentageData,
+                                            needleValue: Math.max(...percentageData),
+                                            backgroundColor: ['green', 'yellow', 'red'],
+                                            borderColor: 'white',
+                                            borderWidth:2,
+                                            cutout:'80%',
+                                            circumference:180,
+                                            rotation:270,
+                                            borderRadius:5
+                                        }]
+                                    };
+                                  </script>
+                           
+                        </h1>
+                        <ol class="level-2-wrapper">
+
+                            <!--Positive sentiment-->
+                            <li>
+                                <h2 class="level-2 rectangle">Positive<div class="divider"></div>
+
+                                     <!--Bubble chart-->
+                                    <div class="graphBox">
+                                        <div class="box">
+                                            <svg class='bubblechart1' width="100%" height="400" font-family="sans-serif" font-size="10" text-anchor="middle"></svg>
+                                            <script src="../static/js/d3.min.js"></script>
+                                            <script src="../static/js/d3-legend.min.js"></script>
+
+                                            <script>
+                                                 // Retrieve relevant data from Jinja variable
+                                                    let data_bubble1 = [
+                                                        {% if 'Positive' in i.sentiments %}
+                                                            {% for source in i.sentiments.Positive.sources %}
+                                                                { 
+                                                                    cat: {% if source.newsSource == "TheStar" or source.newsSource == "Bernama" or source.newsSource == "MalayMail" %}'Local'{% else %}'International'{% endif %},
+                                                                    name: '{{ source.newsSource }}',
+                                                                    value: '{{ source.count }}',
+                                                                    icon: '{{ source.newsSource }}',
+                                                                    desc: '{{ source.count }}'
+                                                                },
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    ];
+                                                
+                                                
+                                                    function createBubbleChart(data){
+                                                    let svg = d3.select('.bubblechart1');
+                                                    let width = 300; // get width in pixels
+                                                    let height = +svg.attr('height');
+                                                    let centerX = width * 0.6;
+                                                    let centerY = height * 0.5;
+                                                    let strength = 0.05;
+                                                    let focusedNode;
+
+                                                    let format = d3.format(',d');
+
+                                                    let scaleColor = d3.scaleOrdinal()
+                                                        .domain(['Local', 'International'])
+                                                        .range(['#1f77b4', 'orange']);
+
+                                                    // use pack to calculate radius of the circle
+                                                    let pack = d3.pack()
+                                                        .size([width , height ])
+                                                        .padding(1.5);
+
+                                                    let forceCollide = d3.forceCollide(d => d.r + 1);
+
+                                                    // use the force
+                                                    let simulation = d3.forceSimulation()
+                                                        // .force('link', d3.forceLink().id(d => d.id))
+                                                        .force('charge', d3.forceManyBody())
+                                                        .force('collide', forceCollide)
+                                                        // .force('center', d3.forceCenter(centerX, centerY))
+                                                        .force('x', d3.forceX(centerX ).strength(strength))
+                                                        .force('y', d3.forceY(centerY ).strength(strength));
+
+                                                    // reduce number of circles on mobile screen due to slow computation
+                                                    if ('matchMedia' in window && window.matchMedia('(max-device-width: 767px)').matches) {
+                                                        data = data.filter(el => {
+                                                            return el.value >= 50;
+                                                        });
+                                                    }
+
+                                                    let root = d3.hierarchy({ children: data })
+                                                    .sum(d => d.value);
+                                                                                            
+
+                                                    // we use pack() to automatically calculate radius conveniently only
+                                                    // and get only the leaves
+                                                    let nodes = pack(root).leaves().map(node => {
+                                                        console.log('node:', node.x, (node.x - centerX) * 2);
+                                                        const data = node.data;
+                                                        const color = scaleColor(data.cat);
+                                                        const radius = Math.sqrt(data.value) * 13;
+                                                        return {
+                                                        x: centerX + (node.x - centerX) * 3, // magnify start position to have transition to center movement
+                                                        y: centerY + (node.y - centerY) * 3,
+                                                        r: 0, // for tweening
+                                                        radius: radius, //original radius
+                                                        id: data.cat + '.' + (data.name.replace(/\s/g, '-')),
+                                                        cat: data.cat,
+                                                        name: data.name,
+                                                        value: data.value,
+                                                        icon: data.icon,
+                                                        desc: data.desc,
+                                                        color: color
+                                                    }
+                                                });
+                                                    simulation.nodes(nodes).on('tick', ticked);
+                                            
+                                                    svg.style('background-color', '#D3D3D3');
+                                                    let node = svg.selectAll('.node')
+                                                        .data(nodes)
+                                                        .enter().append('g')
+                                                        .attr('class', 'node')
+                                                        .call(d3.drag()
+                                                            .on('start', (d) => {
+                                                                if (!d3.event.active) simulation.alphaTarget(0.2).restart();
+                                                                d.fx = d.x;
+                                                                d.fy = d.y;
+                                                            })
+                                                            .on('drag', (d) => {
+                                                                d.fx = d3.event.x;
+                                                                d.fy = d3.event.y;
+                                                            })
+                                                            .on('end', (d) => {
+                                                                if (!d3.event.active) simulation.alphaTarget(0);
+                                                                d.fx = null;
+                                                                d.fy = null;
+                                                            }));
+                                                    
+                                            
+                                                    node.append('circle')
+                                                        .attr('id', d => d.id)
+                                                        .attr('r', 0)
+                                                        .style('fill', d => {
+                                                            if (d.cat === 'Local') {
+                                                                return scaleColor('Local');
+                                                            } else if (d.cat === 'International') {
+                                                                return scaleColor('International');
+                                                            } else {
+                                                                return d.color;
+                                                            }
+                                                        })
+                                                        .transition().duration(2000).ease(d3.easeElasticOut)
+                                                            .tween('circleIn', (d) => {
+                                                                let i = d3.interpolateNumber(0, d.radius);
+                                                                return (t) => {
+                                                                    d.r = i(t);
+                                                                    simulation.force('collide', forceCollide);
+                                                                }
+                                                            })
+                                            
+                                                    node.append('clipPath')
+                                                        .attr('id', d => `clip-${d.id}`)
+                                                        .append('use')
+                                                        .attr('xlink:href', d => `#${d.id}`);
+                                            
+                                                    // display text as circle icon
+                                                    node.filter(d => !String(d.icon).includes('img/'))
+                                                        .append('text')
+                                                        .classed('node-icon', true)
+                                                        .attr('clip-path', d => `url(#clip-${d.id})`)
+                                                        .selectAll('tspan')
+                                                        .data(d => d.icon.split(';'))
+                                                        .enter()
+                                                            .append('tspan')
+                                                            .attr('x', 0)
+                                                            .attr('y', (d, i, nodes) => (13 + (i - nodes.length / 2 - 0.5) * 10))
+                                                            .text(name => name);
+                                            
+                                                    // display image as circle icon
+                                                    node.filter(d => String(d.icon).includes('img/'))
+                                                        .append('image')
+                                                        .classed('node-icon', true)
+                                                        .attr('clip-path', d => `url(#clip-${d.id})`)
+                                                        .attr('xlink:href', d => d.icon)
+                                                        .attr('x', d => - d.radius * 0.7)
+                                                        .attr('y', d => - d.radius * 0.7)
+                                                        .attr('height', d => d.radius * 2 * 0.7)
+                                                        .attr('width', d => d.radius * 2 * 0.7)
+                                            
+                                                    node.append('title')
+                                                        .text(d => (d.name + ' ' + '(' + d.cat +')' + '\n' + format(d.value)+ ' ' + 'news'));
+                                            
+                                                    let legendOrdinal = d3.legendColor()
+                                                        .scale(scaleColor)
+                                                        .shape('circle');
+                                                        
+                                                    let legend = svg.append('g')
+                                                        .classed('legend-color', true)
+                                                        .attr('text-anchor', 'start')
+                                                        .attr('transform','translate(20,30)')
+                                                        .style('font-size','12px')
+                                                        .call(legendOrdinal);
+                                            
+                                                    let sizeScale = d3.scaleOrdinal()
+                                                        .domain(['Less Frequency', 'High Frequency'])
+                                                        .range([5, 10] );
+                                            
+                                                    let legendSize = d3.legendSize()
+                                                        .scale(sizeScale)
+                                                        .shape('circle')
+                                                        .shapePadding(10)
+                                                        .labelAlign('end');
+                                            
+                                                    let legend2 = svg.append('g')
+                                                        .classed('legend-size', true)
+                                                        .attr('text-anchor', 'start')
+                                                        .attr('transform', 'translate(150, 25)')
+                                                        .style('font-size', '12px')
+                                                        .call(legendSize);
+                                            
+                                                    let infoBox = node.append('foreignObject')
+                                                        .classed('circle-overlay hidden', true)
+                                                        .attr('x', -350 * 0.5 * 0.8)
+                                                        .attr('y', -350 * 0.5 * 0.8)
+                                                        .attr('height', 350 * 0.8)
+                                                        .attr('width', 350 * 0.8)
+                                                            .append('xhtml:div')
+                                                            .classed('circle-overlay__inner', true);
+                                            
+                                                    infoBox.append('h2')
+                                                        .classed('circle-overlay__title', true)
+                                                        .text(d => d.name);
+                                            
+                                                    infoBox.append('p')
+                                                        .classed('circle-overlay__body', true)
+                                                        .html(d => d.desc + ' news');
+                                            
+                                            
+                                                        node.on('click', (currentNode) => {
+                                                        d3.event.stopPropagation();
+                                                        console.log('currentNode', currentNode);
+                                                        let currentTarget = d3.event.currentTarget; // the <g> el
+                                            
+                                                        if (currentNode === focusedNode) {
+                                                            // no focusedNode or same focused node is clicked
+                                                            return;
+                                                        }
+                                                        let lastNode = focusedNode;
+                                                        focusedNode = currentNode;
+                                            
+                                                        simulation.alphaTarget(0.2).restart();
+                                                        // hide all circle-overlay
+                                                        d3.selectAll('.circle-overlay').classed('hidden', true);
+                                                        d3.selectAll('.node-icon').classed('node-icon--faded', false);
+                                            
+                                                        // don't fix last node to center anymore
+                                                        if (lastNode) {
+                                                            lastNode.fx = null;
+                                                            lastNode.fy = null;
+                                                            node.filter((d, i) => i === lastNode.index)
+                                                                .transition().duration(2000).ease(d3.easePolyOut)
+                                                                .tween('circleOut', () => {
+                                                                    let irl = d3.interpolateNumber(lastNode.r, lastNode.radius);
+                                                                    return (t) => {
+                                                                        lastNode.r = irl(t);
+                                                                    }
+                                                                })
+                                                                .on('interrupt', () => {
+                                                                    lastNode.r = lastNode.radius;
+                                                                });
+                                                        }
+                                            
+                                                        // if (!d3.event.active) simulation.alphaTarget(0.5).restart();
+                                            
+                                                        d3.transition().duration(2000).ease(d3.easePolyOut)
+                                                            .tween('moveIn', () => {
+                                                                console.log('tweenMoveIn', currentNode);
+                                                                let ix = d3.interpolateNumber(currentNode.x, centerX);
+                                                                let iy = d3.interpolateNumber(currentNode.y, centerY);
+                                                                let ir = d3.interpolateNumber(currentNode.r, centerY * 0.5);
+                                                                return function (t) {
+                                                                    // console.log('i', ix(t), iy(t));
+                                                                    currentNode.fx = ix(t);
+                                                                    currentNode.fy = iy(t);
+                                                                    currentNode.r = ir(t);
+                                                                    simulation.force('collide', forceCollide);
+                                                                };
+                                                            })
+                                                            .on('end', () => {
+                                                                simulation.alphaTarget(0);
+                                                                let $currentGroup = d3.select(currentTarget);
+                                                                $currentGroup.select('.circle-overlay')
+                                                                    .classed('hidden', false);
+                                                                $currentGroup.select('.node-icon')
+                                                                    .classed('node-icon--faded', true);
+                                            
+                                                            })
+                                                            .on('interrupt', () => {
+                                                                console.log('move interrupt', currentNode);
+                                                                currentNode.fx = null;
+                                                                currentNode.fy = null;
+                                                                simulation.alphaTarget(0);
+                                                            });
+                                            
+                                                    });
+                                            
+                                                    // blur
+                                                    d3.select(document).on('click', () => {
+                                                        let target = d3.event.target;
+                                                        // check if click on document but not on the circle overlay
+                                                        if (!target.closest('#circle-overlay') && focusedNode) {
+                                                            focusedNode.fx = null;
+                                                            focusedNode.fy = null;
+                                                            simulation.alphaTarget(0.2).restart();
+                                                            d3.transition().duration(2000).ease(d3.easePolyOut)
+                                                                .tween('moveOut', function () {
+                                                                    console.log('tweenMoveOut', focusedNode);
+                                                                    let ir = d3.interpolateNumber(focusedNode.r, focusedNode.radius);
+                                                                    return function (t) {
+                                                                        focusedNode.r = ir(t);
+                                                                        simulation.force('collide', forceCollide);
+                                                                    };
+                                                                })
+                                                                .on('end', () => {
+                                                                    focusedNode = null;
+                                                                    simulation.alphaTarget(0);
+                                                                })
+                                                                .on('interrupt', () => {
+                                                                    simulation.alphaTarget(0);
+                                                                });
+                                            
+                                                            // hide all circle-overlay
+                                                            d3.selectAll('.circle-overlay').classed('hidden', true);
+                                                            d3.selectAll('.node-icon').classed('node-icon--faded', false);
+                                                        }
+                                                    });
+                                            
+                                                    function ticked() {
+                                                        node
+                                                            .attr('transform', d => `translate(${d.x},${d.y})`)
+                                                            .select('circle')
+                                                                .attr('r', d => d.r);
+                                                    }
+                                                }
+
+                                            createBubbleChart(data_bubble1);
+                                            </script>                                                                                                                                                                                                 
+                                        </div>
+                                    </div>
+                                    
+                                    <!--Top 5 relevant news contents for positive sentiment-->
+                                    <div class="recent-orders">
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>Related Contents</th>
+                                                    <th>Sentiment Score</th>
+                                                    
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% if 'Positive' in i.sentiments %}
+                                                    {% for news_title in i.sentiments.Positive.newsTitles %}
+                                                <tr>
+                                                  <td><h3 class="title-sentiment-positive" data-name="{{ news_title.newsTitle }}">{{ news_title.newsTitle }}</h3></td>
+                                                  <td><h3 class="sentiment-score">{{ news_title.aggregate_compound_score| round(3) }}</h3></td>
+                                              
+                                                </tr>
+                                                    {% endfor %}
+                                                {% endif %}
+                              
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </h2>
+
+                            </li>
+
+                            <!--Neutral sentiment-->
+                            <li>
+                                <h2 class="level-2 rectangle">Neutral<div class="divider"></div>
+                                    <div class="graphBox">
+                                        <div class="box">
+                                            <svg class="bubblechart2" width="100%" height="400" font-family="sans-serif" font-size="10" text-anchor="middle"></svg>
+                                            <script src="../static/js/d3.min.js"></script>
+                                            <script src="../static/js/d3-legend.min.js"></script>
+
+                                            <script>
+                                                 // Retrieve data from Jinja variable
+                                                    let data_bubble2 = [
+                                                        {% if 'Neutral' in i.sentiments %}
+                                                            {% for source in i.sentiments.Neutral.sources %}
+                                                                { 
+                                                                    cat: {% if source.newsSource == "TheStar" or source.newsSource == "Bernama" or source.newsSource == "MalayMail" %}'Local'{% else %}'International'{% endif %},
+                                                                    name: '{{ source.newsSource }}',
+                                                                    value: '{{ source.count }}',
+                                                                    icon: '{{ source.newsSource }}',
+                                                                    desc: '{{ source.count }}'
+                                                                },
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    ];
+
+                                                    function createBubbleChart(data){
+                                                    let svg = d3.select('.bubblechart2');
+                                                    let width = 300; // get width in pixels
+                                                    let height = +svg.attr('height');
+                                                    let centerX = width * 0.6;
+                                                    let centerY = height * 0.5;
+                                                    let strength = 0.05;
+                                                    let focusedNode;
+
+                                                    let format = d3.format(',d');
+
+                                                    let scaleColor = d3.scaleOrdinal()
+                                                        .domain(['Local', 'International'])
+                                                        .range(['#1f77b4', 'orange']);
+
+                                                    // use pack to calculate radius of the circle
+                                                    let pack = d3.pack()
+                                                        .size([width , height ])
+                                                        .padding(1.5);
+
+                                                    let forceCollide = d3.forceCollide(d => d.r + 1);
+
+                                                    // use the force
+                                                    let simulation = d3.forceSimulation()
+                                                        // .force('link', d3.forceLink().id(d => d.id))
+                                                        .force('charge', d3.forceManyBody())
+                                                        .force('collide', forceCollide)
+                                                        // .force('center', d3.forceCenter(centerX, centerY))
+                                                        .force('x', d3.forceX(centerX ).strength(strength))
+                                                        .force('y', d3.forceY(centerY ).strength(strength));
+
+                                                    // reduce number of circles on mobile screen due to slow computation
+                                                    if ('matchMedia' in window && window.matchMedia('(max-device-width: 767px)').matches) {
+                                                        data = data.filter(el => {
+                                                            return el.value >= 50;
+                                                        });
+                                                    }
+
+                                                    let root = d3.hierarchy({ children: data })
+                                                    .sum(d => d.value);
+                                                                                            
+
+                                                    // we use pack() to automatically calculate radius conveniently only
+                                                    // and get only the leaves
+                                                    let nodes = pack(root).leaves().map(node => {
+                                                        console.log('node:', node.x, (node.x - centerX) * 2);
+                                                        const data = node.data;
+                                                        const color = scaleColor(data.cat);
+                                                        const radius = Math.sqrt(data.value) * 13;
+                                                        return {
+                                                        x: centerX + (node.x - centerX) * 3, // magnify start position to have transition to center movement
+                                                        y: centerY + (node.y - centerY) * 3,
+                                                        r: 0, // for tweening
+                                                        radius: radius, //original radius
+                                                        id: data.cat + '.' + (data.name.replace(/\s/g, '-')),
+                                                        cat: data.cat,
+                                                        name: data.name,
+                                                        value: data.value,
+                                                        icon: data.icon,
+                                                        desc: data.desc,
+                                                        color: color
+                                                    }
+                                                });
+                                                    simulation.nodes(nodes).on('tick', ticked);
+                                            
+                                                    svg.style('background-color', '#D3D3D3');
+                                                    let node = svg.selectAll('.node')
+                                                        .data(nodes)
+                                                        .enter().append('g')
+                                                        .attr('class', 'node')
+                                                        .call(d3.drag()
+                                                            .on('start', (d) => {
+                                                                if (!d3.event.active) simulation.alphaTarget(0.2).restart();
+                                                                d.fx = d.x;
+                                                                d.fy = d.y;
+                                                            })
+                                                            .on('drag', (d) => {
+                                                                d.fx = d3.event.x;
+                                                                d.fy = d3.event.y;
+                                                            })
+                                                            .on('end', (d) => {
+                                                                if (!d3.event.active) simulation.alphaTarget(0);
+                                                                d.fx = null;
+                                                                d.fy = null;
+                                                            }));
+                                            
+                                                    node.append('circle')
+                                                        .attr('id', d => d.id)
+                                                        .attr('r', 0)
+                                                        .style('fill', d => {
+                                                            if (d.cat === 'Local') {
+                                                                return scaleColor('Local'); // Use a fixed color for the "Local" category
+                                                            } else if (d.cat === 'International') {
+                                                                return scaleColor('International'); // Use a fixed color for the "International" category
+                                                            } else {
+                                                                return d.color; // Use the existing color if not in "Local" or "International" category
+                                                            }
+                                                        })
+                                                        .transition().duration(2000).ease(d3.easeElasticOut)
+                                                            .tween('circleIn', (d) => {
+                                                                let i = d3.interpolateNumber(0, d.radius);
+                                                                return (t) => {
+                                                                    d.r = i(t);
+                                                                    simulation.force('collide', forceCollide);
+                                                                }
+                                                            })
+                                            
+                                                    node.append('clipPath')
+                                                        .attr('id', d => `clip-${d.id}`)
+                                                        .append('use')
+                                                        .attr('xlink:href', d => `#${d.id}`);
+                                            
+                                                    // display text as circle icon
+                                                    node.filter(d => !String(d.icon).includes('img/'))
+                                                        .append('text')
+                                                        .classed('node-icon', true)
+                                                        .attr('clip-path', d => `url(#clip-${d.id})`)
+                                                        .selectAll('tspan')
+                                                        .data(d => d.icon.split(';'))
+                                                        .enter()
+                                                            .append('tspan')
+                                                            .attr('x', 0)
+                                                            .attr('y', (d, i, nodes) => (13 + (i - nodes.length / 2 - 0.5) * 10))
+                                                            .text(name => name);
+                                            
+                                                    // display image as circle icon
+                                                    node.filter(d => String(d.icon).includes('img/'))
+                                                        .append('image')
+                                                        .classed('node-icon', true)
+                                                        .attr('clip-path', d => `url(#clip-${d.id})`)
+                                                        .attr('xlink:href', d => d.icon)
+                                                        .attr('x', d => - d.radius * 0.7)
+                                                        .attr('y', d => - d.radius * 0.7)
+                                                        .attr('height', d => d.radius * 2 * 0.7)
+                                                        .attr('width', d => d.radius * 2 * 0.7)
+                                            
+                                                    node.append('title')
+                                                        .text(d => (d.name + ' ' + '(' + d.cat +')' + '\n' + format(d.value)+ ' ' + 'news'));
+                                            
+                                                    let legendOrdinal = d3.legendColor()
+                                                        .scale(scaleColor)
+                                                        .shape('circle');
+                                                        
+                                                    let legend = svg.append('g')
+                                                        .classed('legend-color', true)
+                                                        .attr('text-anchor', 'start')
+                                                        .attr('transform','translate(20,30)')
+                                                        .style('font-size','12px')
+                                                        .call(legendOrdinal);
+                                            
+                                                    let sizeScale = d3.scaleOrdinal()
+                                                        .domain(['Less Frequency', 'High Frequency'])
+                                                        .range([5, 10] );
+                                            
+                                                    let legendSize = d3.legendSize()
+                                                        .scale(sizeScale)
+                                                        .shape('circle')
+                                                        .shapePadding(10)
+                                                        .labelAlign('end');
+                                            
+                                                    let legend2 = svg.append('g')
+                                                        .classed('legend-size', true)
+                                                        .attr('text-anchor', 'start')
+                                                        .attr('transform', 'translate(150, 25)')
+                                                        .style('font-size', '12px')
+                                                        .call(legendSize);
+                                            
+                                                    let infoBox = node.append('foreignObject')
+                                                        .classed('circle-overlay hidden', true)
+                                                        .attr('x', -350 * 0.5 * 0.8)
+                                                        .attr('y', -350 * 0.5 * 0.8)
+                                                        .attr('height', 350 * 0.8)
+                                                        .attr('width', 350 * 0.8)
+                                                            .append('xhtml:div')
+                                                            .classed('circle-overlay__inner', true);
+                                            
+                                                    infoBox.append('h2')
+                                                        .classed('circle-overlay__title', true)
+                                                        .text(d => d.name);
+                                            
+                                                    infoBox.append('p')
+                                                        .classed('circle-overlay__body', true)
+                                                        .html(d => d.desc + ' news');
+                                            
+                                            
+                                                    node.on('click', (currentNode) => {
+                                                        d3.event.stopPropagation();
+                                                        console.log('currentNode', currentNode);
+                                                        let currentTarget = d3.event.currentTarget; // the <g> el
+                                            
+                                                        if (currentNode === focusedNode) {
+                                                            // no focusedNode or same focused node is clicked
+                                                            return;
+                                                        }
+                                                        let lastNode = focusedNode;
+                                                        focusedNode = currentNode;
+                                            
+                                                        simulation.alphaTarget(0.2).restart();
+                                                        // hide all circle-overlay
+                                                        d3.selectAll('.circle-overlay').classed('hidden', true);
+                                                        d3.selectAll('.node-icon').classed('node-icon--faded', false);
+                                            
+                                                        // don't fix last node to center anymore
+                                                        if (lastNode) {
+                                                            lastNode.fx = null;
+                                                            lastNode.fy = null;
+                                                            node.filter((d, i) => i === lastNode.index)
+                                                                .transition().duration(2000).ease(d3.easePolyOut)
+                                                                .tween('circleOut', () => {
+                                                                    let irl = d3.interpolateNumber(lastNode.r, lastNode.radius);
+                                                                    return (t) => {
+                                                                        lastNode.r = irl(t);
+                                                                    }
+                                                                })
+                                                                .on('interrupt', () => {
+                                                                    lastNode.r = lastNode.radius;
+                                                                });
+                                                        }
+                                            
+                                                        // if (!d3.event.active) simulation.alphaTarget(0.5).restart();
+                                            
+                                                        d3.transition().duration(2000).ease(d3.easePolyOut)
+                                                            .tween('moveIn', () => {
+                                                                console.log('tweenMoveIn', currentNode);
+                                                                let ix = d3.interpolateNumber(currentNode.x, centerX);
+                                                                let iy = d3.interpolateNumber(currentNode.y, centerY);
+                                                                let ir = d3.interpolateNumber(currentNode.r, centerY * 0.5);
+                                                                return function (t) {
+                                                                    // console.log('i', ix(t), iy(t));
+                                                                    currentNode.fx = ix(t);
+                                                                    currentNode.fy = iy(t);
+                                                                    currentNode.r = ir(t);
+                                                                    simulation.force('collide', forceCollide);
+                                                                };
+                                                            })
+                                                            .on('end', () => {
+                                                                simulation.alphaTarget(0);
+                                                                let $currentGroup = d3.select(currentTarget);
+                                                                $currentGroup.select('.circle-overlay')
+                                                                    .classed('hidden', false);
+                                                                $currentGroup.select('.node-icon')
+                                                                    .classed('node-icon--faded', true);
+                                            
+                                                            })
+                                                            .on('interrupt', () => {
+                                                                console.log('move interrupt', currentNode);
+                                                                currentNode.fx = null;
+                                                                currentNode.fy = null;
+                                                                simulation.alphaTarget(0);
+                                                            });
+                                            
+                                                    });
+                                            
+                                                    // blur
+                                                    d3.select(document).on('click', () => {
+                                                        let target = d3.event.target;
+                                                        // check if click on document but not on the circle overlay
+                                                        if (!target.closest('#circle-overlay') && focusedNode) {
+                                                            focusedNode.fx = null;
+                                                            focusedNode.fy = null;
+                                                            simulation.alphaTarget(0.2).restart();
+                                                            d3.transition().duration(2000).ease(d3.easePolyOut)
+                                                                .tween('moveOut', function () {
+                                                                    console.log('tweenMoveOut', focusedNode);
+                                                                    let ir = d3.interpolateNumber(focusedNode.r, focusedNode.radius);
+                                                                    return function (t) {
+                                                                        focusedNode.r = ir(t);
+                                                                        simulation.force('collide', forceCollide);
+                                                                    };
+                                                                })
+                                                                .on('end', () => {
+                                                                    focusedNode = null;
+                                                                    simulation.alphaTarget(0);
+                                                                })
+                                                                .on('interrupt', () => {
+                                                                    simulation.alphaTarget(0);
+                                                                });
+                                            
+                                                            // hide all circle-overlay
+                                                            d3.selectAll('.circle-overlay').classed('hidden', true);
+                                                            d3.selectAll('.node-icon').classed('node-icon--faded', false);
+                                                        }
+                                                    });
+                                            
+                                                    function ticked() {
+                                                        node
+                                                            .attr('transform', d => `translate(${d.x},${d.y})`)
+                                                            .select('circle')
+                                                                .attr('r', d => d.r);
+                                                    }
+                                                }
+
+                                            createBubbleChart(data_bubble2);
+                                            </script>
+                                            
+                                            </script>
+                                            
+                                        </div>
+
+                                    </div>
+
+                                    <!--Top 5 relevant news contents for neutral sentiment-->
+                                    <div class="recent-orders">
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>Related Contents</th>
+                                                    <th>Sentiment Score</th>                                                 
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                              {% if 'Neutral' in i.sentiments %}
+                                                {% for news_title in i.sentiments.Neutral.newsTitles %}
+                                                <tr>
+                                                    <td><h3 class="title-sentiment-neutral" data-name="{{ news_title.newsTitle }}">{{ news_title.newsTitle }}</h3></td>
+                                                    <td><h3 class="sentiment-score">{{ news_title.aggregate_compound_score| round(3) }}</h3></td>
+                                                </tr>
+                                                {% endfor %}
+                                              {% endif %}
+                                            </tbody>
+                                        </table>
+                                        
+                                    </div>
+
+                                </h2>
+                            </li>
+
+                            <!--Negative sentiment-->
+                            <li>
+                                <h2 class="level-2 rectangle">Negative<div class="divider"></div>
+
+                                    <div class="graphBox">
+                                        <div class="box">
+                                        
+                                            <svg class="bubblechart3" width="100%" height="400" font-family="sans-serif" font-size="10" text-anchor="middle"></svg>
+                                            <script src="../static/js/d3.min.js"></script>
+                                            <script src="../static/js/d3-legend.min.js"></script>
+
+                                            <script>
+                                                 // Retrieve data from Jinja variable
+                                                    let data_bubble3 = [
+                                                        {% if 'Negative' in i.sentiments %}
+                                                            {% for source in i.sentiments.Negative.sources %}
+                                                                { 
+                                                                    cat: {% if source.newsSource == "TheStar" or source.newsSource == "Bernama" or source.newsSource == "MalayMail" %}'Local'{% else %}'International'{% endif %},
+                                                                    name: '{{ source.newsSource }}',
+                                                                    value: '{{ source.count }}',
+                                                                    icon: '{{ source.newsSource }}',
+                                                                    desc: '{{ source.count }}'
+                                                                },
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    ];
+                                                    
+                                                    
+                                                    function createBubbleChart(data){
+                                                    let svg = d3.select('.bubblechart3');
+                                                    let width = 300; // get width in pixels
+                                                    let height = +svg.attr('height');
+                                                    let centerX = width * 0.6;
+                                                    let centerY = height * 0.5;
+                                                    let strength = 0.05;
+                                                    let focusedNode;
+
+                                                    let format = d3.format(',d');
+
+                                                    let scaleColor = d3.scaleOrdinal()
+                                                        .domain(['Local', 'International'])
+                                                        .range(['#1f77b4', 'orange']);
+
+                                                    // use pack to calculate radius of the circle
+                                                    let pack = d3.pack()
+                                                        .size([width , height ])
+                                                        .padding(1.5);
+
+                                                    let forceCollide = d3.forceCollide(d => d.r + 1);
+
+                                                    // use the force
+                                                    let simulation = d3.forceSimulation()
+                                                        // .force('link', d3.forceLink().id(d => d.id))
+                                                        .force('charge', d3.forceManyBody())
+                                                        .force('collide', forceCollide)
+                                                        // .force('center', d3.forceCenter(centerX, centerY))
+                                                        .force('x', d3.forceX(centerX ).strength(strength))
+                                                        .force('y', d3.forceY(centerY ).strength(strength));
+
+                                                    // reduce number of circles on mobile screen due to slow computation
+                                                    if ('matchMedia' in window && window.matchMedia('(max-device-width: 767px)').matches) {
+                                                        data = data.filter(el => {
+                                                            return el.value >= 50;
+                                                        });
+                                                    }
+
+                                                    let root = d3.hierarchy({ children: data })
+                                                    .sum(d => d.value);
+                                                                                            
+
+                                                    // we use pack() to automatically calculate radius conveniently only
+                                                    // and get only the leaves
+                                                    let nodes = pack(root).leaves().map(node => {
+                                                        console.log('node:', node.x, (node.x - centerX) * 2);
+                                                        const data = node.data;
+                                                        const color = scaleColor(data.cat);
+                                                        const radius = Math.sqrt(data.value) * 13;
+                                                        return {
+                                                        x: centerX + (node.x - centerX) * 3, // magnify start position to have transition to center movement
+                                                        y: centerY + (node.y - centerY) * 3,
+                                                        r: 0, // for tweening
+                                                        radius: radius, //original radius
+                                                        id: data.cat + '.' + (data.name.replace(/\s/g, '-')),
+                                                        cat: data.cat,
+                                                        name: data.name,
+                                                        value: data.value,
+                                                        icon: data.icon,
+                                                        desc: data.desc,
+                                                        color: color
+                                                    }
+                                                });
+                                                    simulation.nodes(nodes).on('tick', ticked);
+                                            
+                                                    svg.style('background-color', '#D3D3D3');
+                                                    let node = svg.selectAll('.node')
+                                                        .data(nodes)
+                                                        .enter().append('g')
+                                                        .attr('class', 'node')
+                                                        .call(d3.drag()
+                                                            .on('start', (d) => {
+                                                                if (!d3.event.active) simulation.alphaTarget(0.2).restart();
+                                                                d.fx = d.x;
+                                                                d.fy = d.y;
+                                                            })
+                                                            .on('drag', (d) => {
+                                                                d.fx = d3.event.x;
+                                                                d.fy = d3.event.y;
+                                                            })
+                                                            .on('end', (d) => {
+                                                                if (!d3.event.active) simulation.alphaTarget(0);
+                                                                d.fx = null;
+                                                                d.fy = null;
+                                                            }));
+                                            
+                                                    node.append('circle')
+                                                        .attr('id', d => d.id)
+                                                        .attr('r', 0)
+                                                        .style('fill', d => {
+                                                            if (d.cat === 'Local') {
+                                                                return scaleColor('Local'); // Use a fixed color for the "Local" category
+                                                            } else if (d.cat === 'International') {
+                                                                return scaleColor('International'); // Use a fixed color for the "International" category
+                                                            } else {
+                                                                return d.color; // Use the existing color if not in "Local" or "International" category
+                                                            }
+                                                        })
+                                                        .transition().duration(2000).ease(d3.easeElasticOut)
+                                                            .tween('circleIn', (d) => {
+                                                                let i = d3.interpolateNumber(0, d.radius);
+                                                                return (t) => {
+                                                                    d.r = i(t);
+                                                                    simulation.force('collide', forceCollide);
+                                                                }
+                                                            })
+                                            
+                                                    node.append('clipPath')
+                                                        .attr('id', d => `clip-${d.id}`)
+                                                        .append('use')
+                                                        .attr('xlink:href', d => `#${d.id}`);
+                                            
+                                                    // display text as circle icon
+                                                    node.filter(d => !String(d.icon).includes('img/'))
+                                                        .append('text')
+                                                        .classed('node-icon', true)
+                                                        .attr('clip-path', d => `url(#clip-${d.id})`)
+                                                        .selectAll('tspan')
+                                                        .data(d => d.icon.split(';'))
+                                                        .enter()
+                                                            .append('tspan')
+                                                            .attr('x', 0)
+                                                            .attr('y', (d, i, nodes) => (13 + (i - nodes.length / 2 - 0.5) * 10))
+                                                            .text(name => name);
+                                            
+                                                    // display image as circle icon
+                                                    node.filter(d => String(d.icon).includes('img/'))
+                                                        .append('image')
+                                                        .classed('node-icon', true)
+                                                        .attr('clip-path', d => `url(#clip-${d.id})`)
+                                                        .attr('xlink:href', d => d.icon)
+                                                        .attr('x', d => - d.radius * 0.7)
+                                                        .attr('y', d => - d.radius * 0.7)
+                                                        .attr('height', d => d.radius * 2 * 0.7)
+                                                        .attr('width', d => d.radius * 2 * 0.7)
+                                            
+                                                    node.append('title')
+                                                        .text(d => (d.name + ' ' + '(' + d.cat +')' + '\n' + format(d.value)+ ' ' + 'news'));
+                                            
+                                                    let legendOrdinal = d3.legendColor()
+                                                        .scale(scaleColor)
+                                                        .shape('circle');
+                                                        
+                                                    let legend = svg.append('g')
+                                                        .classed('legend-color', true)
+                                                        .attr('text-anchor', 'start')
+                                                        .attr('transform','translate(20,30)')
+                                                        .style('font-size','12px')
+                                                        .call(legendOrdinal);
+                                            
+                                                    let sizeScale = d3.scaleOrdinal()
+                                                        .domain(['Less Frequency', 'High Frequency'])
+                                                        .range([5, 10] );
+                                            
+                                                    let legendSize = d3.legendSize()
+                                                        .scale(sizeScale)
+                                                        .shape('circle')
+                                                        .shapePadding(10)
+                                                        .labelAlign('end');
+                                            
+                                                    let legend2 = svg.append('g')
+                                                        .classed('legend-size', true)
+                                                        .attr('text-anchor', 'start')
+                                                        .attr('transform', 'translate(150, 25)')
+                                                        .style('font-size', '12px')
+                                                        .call(legendSize);
+                                            
+                                                    let infoBox = node.append('foreignObject')
+                                                        .classed('circle-overlay hidden', true)
+                                                        .attr('x', -350 * 0.5 * 0.8)
+                                                        .attr('y', -350 * 0.5 * 0.8)
+                                                        .attr('height', 350 * 0.8)
+                                                        .attr('width', 350 * 0.8)
+                                                            .append('xhtml:div')
+                                                            .classed('circle-overlay__inner', true);
+                                            
+                                                    infoBox.append('h2')
+                                                        .classed('circle-overlay__title', true)
+                                                        .text(d => d.name);
+                                            
+                                                    infoBox.append('p')
+                                                        .classed('circle-overlay__body', true)
+                                                        .html(d => d.desc + ' news');
+                                            
+                                            
+                                                    node.on('click', (currentNode) => {
+                                                        d3.event.stopPropagation();
+                                                        console.log('currentNode', currentNode);
+                                                        let currentTarget = d3.event.currentTarget; // the <g> el
+                                            
+                                                        if (currentNode === focusedNode) {
+                                                            // no focusedNode or same focused node is clicked
+                                                            return;
+                                                        }
+                                                        let lastNode = focusedNode;
+                                                        focusedNode = currentNode;
+                                            
+                                                        simulation.alphaTarget(0.2).restart();
+                                                        // hide all circle-overlay
+                                                        d3.selectAll('.circle-overlay').classed('hidden', true);
+                                                        d3.selectAll('.node-icon').classed('node-icon--faded', false);
+                                            
+                                                        // don't fix last node to center anymore
+                                                        if (lastNode) {
+                                                            lastNode.fx = null;
+                                                            lastNode.fy = null;
+                                                            node.filter((d, i) => i === lastNode.index)
+                                                                .transition().duration(2000).ease(d3.easePolyOut)
+                                                                .tween('circleOut', () => {
+                                                                    let irl = d3.interpolateNumber(lastNode.r, lastNode.radius);
+                                                                    return (t) => {
+                                                                        lastNode.r = irl(t);
+                                                                    }
+                                                                })
+                                                                .on('interrupt', () => {
+                                                                    lastNode.r = lastNode.radius;
+                                                                });
+                                                        }
+                                            
+                                                        // if (!d3.event.active) simulation.alphaTarget(0.5).restart();
+                                            
+                                                        d3.transition().duration(2000).ease(d3.easePolyOut)
+                                                            .tween('moveIn', () => {
+                                                                console.log('tweenMoveIn', currentNode);
+                                                                let ix = d3.interpolateNumber(currentNode.x, centerX);
+                                                                let iy = d3.interpolateNumber(currentNode.y, centerY);
+                                                                let ir = d3.interpolateNumber(currentNode.r, centerY * 0.5);
+                                                                return function (t) {
+                                                                    // console.log('i', ix(t), iy(t));
+                                                                    currentNode.fx = ix(t);
+                                                                    currentNode.fy = iy(t);
+                                                                    currentNode.r = ir(t);
+                                                                    simulation.force('collide', forceCollide);
+                                                                };
+                                                            })
+                                                            .on('end', () => {
+                                                                simulation.alphaTarget(0);
+                                                                let $currentGroup = d3.select(currentTarget);
+                                                                $currentGroup.select('.circle-overlay')
+                                                                    .classed('hidden', false);
+                                                                $currentGroup.select('.node-icon')
+                                                                    .classed('node-icon--faded', true);
+                                            
+                                                            })
+                                                            .on('interrupt', () => {
+                                                                console.log('move interrupt', currentNode);
+                                                                currentNode.fx = null;
+                                                                currentNode.fy = null;
+                                                                simulation.alphaTarget(0);
+                                                            });
+                                            
+                                                    });
+                                            
+                                                    // blur
+                                                    d3.select(document).on('click', () => {
+                                                        let target = d3.event.target;
+                                                        // check if click on document but not on the circle overlay
+                                                        if (!target.closest('#circle-overlay') && focusedNode) {
+                                                            focusedNode.fx = null;
+                                                            focusedNode.fy = null;
+                                                            simulation.alphaTarget(0.2).restart();
+                                                            d3.transition().duration(2000).ease(d3.easePolyOut)
+                                                                .tween('moveOut', function () {
+                                                                    console.log('tweenMoveOut', focusedNode);
+                                                                    let ir = d3.interpolateNumber(focusedNode.r, focusedNode.radius);
+                                                                    return function (t) {
+                                                                        focusedNode.r = ir(t);
+                                                                        simulation.force('collide', forceCollide);
+                                                                    };
+                                                                })
+                                                                .on('end', () => {
+                                                                    focusedNode = null;
+                                                                    simulation.alphaTarget(0);
+                                                                })
+                                                                .on('interrupt', () => {
+                                                                    simulation.alphaTarget(0);
+                                                                });
+                                            
+                                                            // hide all circle-overlay
+                                                            d3.selectAll('.circle-overlay').classed('hidden', true);
+                                                            d3.selectAll('.node-icon').classed('node-icon--faded', false);
+                                                        }
+                                                    });
+                                            
+                                                    function ticked() {
+                                                        node
+                                                            .attr('transform', d => `translate(${d.x},${d.y})`)
+                                                            .select('circle')
+                                                                .attr('r', d => d.r);
+                                                    }
+                                                }
+
+                                            createBubbleChart(data_bubble3);
+                                            </script>
+                                            
+                                            </script>
+                                           
+                                            
+                                           
+                                        </div>
+
+                                    </div>
+
+                                    <!--Top 5 relevant news contents for negative sentiment-->
+                                    <div class="recent-orders">
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    <th>Related Contents</th>
+                                                    <th>Sentiment Score</th>
+                                                    
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                              {% if 'Negative' in i.sentiments %}
+                                                {% for news_title in i.sentiments.Negative.newsTitles|sort(attribute='aggregate_compound_score') %}
+                                                <tr>
+                                                  <td><h3 class="title-sentiment-negative" data-name="{{ news_title.newsTitle }}">{{ news_title.newsTitle }}</h3></td>
+                                                    <td><h3 class="sentiment-score">{{ news_title.aggregate_compound_score| round(3) }}</h3></td>
+                                                </tr>
+                                                {% endfor %}
+                                              {% endif %}
+                                            </tbody>
+                                        </table>
+                                        
+                                    </div>
+
+                                </h2>
+                            </li>
+
+                        </ol>
+                </div>
+                    {% endfor %}
+
+                    <!--Pagination results-->
+                    {% if pagination %}
+                <div class="pagination">
+                    {{ pagination.info }}
+                    {{ pagination.links }}
+                    {% endif %}
+                </div>
+                </div>
+                
+                    <!--Pop-up cards elements when news content is clicked-->
+                    <div class="products-preview">
+                            {% for i in recommend %}
+                                {% if 'Positive' in i.sentiments %}
+                                {% for news_title in i.sentiments.Positive.newsTitles %}
+                            <div class="preview {{news_title.newsType}}" data-target="{{ news_title.newsTitle }}">
+                                <ion-icon name="close-outline" class="close-button-ion"></ion-icon>
+                                <figure class="card-topic">
+                                    <img src="{{news_title.newsImageURL}}" onerror="this.onerror=null; this.src='static/image/insightnews-high-resolution-color-logo.png'" alt="">
+                                </figure>
+                                <h3>{{ news_title.newsTitle }}</h3>
+                               
+                                
+                                <div class="price-flex">
+                                    <div class="trending">
+                                        <ion-icon name="newspaper"></ion-icon>
+                                        <data>{{news_title.newsSource}}</data>
+                                    </div>
+                                    <div class="trending">
+                                        <ion-icon name="apps"></ion-icon>
+                                        <data>{{news_title.newsType}}</data>
+                                    </div>
+                                    <div class="trending">
+                                        <ion-icon name="calendar-outline"></ion-icon>
+                                        <data>{{news_title.newsTimeDatePublished|format_datetime('%d %b %Y')}}</data>
+                                    </div>
+                                    {% if news_title['favorite_count'] %}
+                                    <div class="trending">
+                                        <ion-icon name="heart"></ion-icon>
+                                        <data>{{news_title.favorite_count}}</data>
+                                    </div>
+                                    {% elif news_title['newsType']=='Tweets' %}
+                                    <div class="trending">
+                                        <ion-icon name="heart"></ion-icon>
+                                        <data>0</data>
+                                    </div>
+                                    {% endif %}
+                                    {% if news_title['retweet_count'] %}
+                                    <div class="trending">
+                                        <ion-icon name="sync"></ion-icon>
+                                        <data>{{news_title.retweet_count}}</data>
+                                    </div>
+                                    {% elif news_title['newsType']=='Tweets' %}
+                                    <div class="trending">
+                                        <ion-icon name="sync"></ion-icon>
+                                        <data>0</data>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+
+                                <div class="buttons">
+                                    <a href="{{ url_for('news_details',name=news_title['newsTitle'])}}">
+                                        <button class="btn btn-primary">
+                                            <ion-icon name="book-outline"></ion-icon>
+                                            <span>Read More...</span>
+                                        </button>
+                                    </a>
+                                </div>
+                            </div>
+                                {% endfor %}
+                                {% endif %}
+                            {% endfor %}
+
+                            {% for i in recommend %}
+                                {% if 'Neutral' in i.sentiments %}
+                                {% for news_title in i.sentiments.Neutral.newsTitles %}
+                            <div class="preview {{news_title.newsType}}" data-target="{{ news_title.newsTitle }}">
+                                <ion-icon name="close-outline" class="close-button-ion"></ion-icon>
+                                <figure class="card-topic">
+                                    <img src="{{news_title.newsImageURL}}" onerror="this.onerror=null; this.src='static/image/insightnews-high-resolution-color-logo.png'" alt="">
+                                </figure>
+                                <h3>{{ news_title.newsTitle }}</h3>
+                               
+                                
+                                
+                                <div class="price-flex">
+                                    <div class="trending">
+                                        <ion-icon name="newspaper"></ion-icon>
+                                        <data>{{news_title.newsSource}}</data>
+                                    </div>
+                                    <div class="trending">
+                                        <ion-icon name="apps"></ion-icon>
+                                        <data>{{news_title.newsType}}</data>
+                                    </div>
+                                    <div class="trending">
+                                        <ion-icon name="calendar-outline"></ion-icon>
+                                        <data>{{news_title.newsTimeDatePublished|format_datetime('%d %b %Y')}}</data>
+                                    </div>
+                                    {% if news_title['favorite_count'] %}
+                                    <div class="trending">
+                                        <ion-icon name="heart"></ion-icon>
+                                        <data>{{news_title.favorite_count}}</data>
+                                    </div>
+                                    {% elif news_title['newsType']=='Tweets' %}
+                                    <div class="trending">
+                                        <ion-icon name="heart"></ion-icon>
+                                        <data>0</data>
+                                    </div>
+                                    {% endif %}
+                                    {% if news_title['retweet_count'] %}
+                                    <div class="trending">
+                                        <ion-icon name="sync"></ion-icon>
+                                        <data>{{news_title.retweet_count}}</data>
+                                    </div>
+                                    {% elif news_title['newsType']=='Tweets' %}
+                                    <div class="trending">
+                                        <ion-icon name="sync"></ion-icon>
+                                        <data>0</data>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+
+                                <div class="buttons">
+                                    <a href="{{ url_for('news_details',name=news_title['newsTitle'])}}">
+                                        <button class="btn btn-primary">
+                                            <ion-icon name="book-outline"></ion-icon>
+                                            <span>Read More...</span>
+                                        </button>
+                                    </a>
+                                </div>
+                            </div>
+                                {% endfor %}
+                                {% endif %}
+                            {% endfor %}
+
+                            {% for i in recommend %}
+                                {% if 'Negative' in i.sentiments %}
+                                {% for news_title in i.sentiments.Negative.newsTitles %}
+                            <div class="preview {{news_title.newsType}}" data-target="{{ news_title.newsTitle }}">
+                                <ion-icon name="close-outline" class="close-button-ion"></ion-icon>
+                                <figure class="card-topic">
+                                    <img src="{{news_title.newsImageURL}}" onerror="this.onerror=null; this.src='static/image/insightnews-high-resolution-color-logo.png'" alt="">
+                                </figure>
+                                <h3>{{ news_title.newsTitle }}</h3>
+                               
+                                
+                                
+                                <div class="price-flex">
+                                    <div class="trending">
+                                        <ion-icon name="newspaper"></ion-icon>
+                                        <data>{{news_title.newsSource}}</data>
+                                    </div>
+                                    <div class="trending">
+                                        <ion-icon name="apps"></ion-icon>
+                                        <data>{{news_title.newsType}}</data>
+                                    </div>
+                                    <div class="trending">
+                                        <ion-icon name="calendar-outline"></ion-icon>
+                                        <data>{{news_title.newsTimeDatePublished|format_datetime('%d %b %Y')}}</data>
+                                    </div>
+                                    {% if news_title['favorite_count'] %}
+                                    <div class="trending">
+                                        <ion-icon name="heart"></ion-icon>
+                                        <data>{{news_title.favorite_count}}</data>
+                                    </div>
+                                    {% elif news_title['newsType']=='Tweets' %}
+                                    <div class="trending">
+                                        <ion-icon name="heart"></ion-icon>
+                                        <data>0</data>
+                                    </div>
+                                    {% endif %}
+                                    {% if news_title['retweet_count'] %}
+                                    <div class="trending">
+                                        <ion-icon name="sync"></ion-icon>
+                                        <data>{{news_title.retweet_count}}</data>
+                                    </div>
+                                    {% elif news_title['newsType']=='Tweets' %}
+                                    <div class="trending">
+                                        <ion-icon name="sync"></ion-icon>
+                                        <data>0</data>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                
+
+                                <div class="buttons">
+                                    <a href="{{ url_for('news_details',name=news_title['newsTitle'])}}">
+                                        <button class="btn btn-primary">
+                                            <ion-icon name="book-outline"></ion-icon>
+                                            <span>Read More...</span>
+                                        </button>
+                                    </a>
+                                </div>
+                            </div>
+                                {% endfor %}
+                                {% endif %}
+                            {% endfor %}
+                            
+                    </div>                            
+            </section>
+        </article>
+    </main>
+
+    <!--Footer-->
+    <footer class="footer">
+        <div class="footer-top">
+            <div class="container">
+                <div class="footer-brand-wrapper">
+                    <a href="{{url_for('home')}}" class="logo">
+                        <img src="static/image/insight-logo.png" class="web-logo" alt="Logo">
+                    </a>
+
+                    <ul class="footer-list">
+                        <li>
+                            <a href="{{url_for('home')}}" class="footer-link">Home</a>
+                        </li>
+
+                        <li>
+                            <a href="{{url_for('keyword')}}" class="navbar-link">Discover Keyword/Phrases</a>
+                        </li>
+
+                        <li>
+                            <a href="#topic" class="navbar-link">Discover Topics</a>
+                            <ul class="dropdown">
+                                <li><a href="{{url_for('topic_visualize')}}">Topic Analysis Visualization ></a></li>
+                                <li><a href="{{url_for('topic')}}">Trending Tweets by Topics ></a></li>
+                            </ul>
+                        </li>
+    
+                        <li>
+                            <a href="#multi-view" class="navbar-link">View Multi-Perspective Sentiment ▾</a>
+                            <ul class="dropdown">
+                                <li><a href="{{url_for('sentiment')}}">Topic Sentiment ></a></li>
+                                <li><a href="{{url_for('sentiment_comparison')}}">Topic Sentiment Comparison ></a></li>
+                            </ul>
+    
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="divider"></div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div class="container">
+                <p class="copyright">
+                    &copy; 2023 <a href="#">Ho Khum Leon</a>. All Rights Reserved
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!--Go To Top-->
+    <a href="#top" class="go-top" data-go-top>
+        <ion-icon name="chevron-up"></ion-icon>
+    </a>
+
+    <!--js script-->
+    <script type="module" src="static/js/script_main.js"></script>
+    <!--chart js CDN-->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+
+
+    <!--JQuery CDN link-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+
+    <script>
+        let subMenu = document.getElementById("subMenu");
+        function toggleMenu() {
+            subMenu.classList.toggle("open-menu")
+        }
+    </script>
+
+    <script>
+        $(document).ready(function () {
+
+            //jquery to expand and collapse the sidebar
+            $('.menu-btn').click(function () {
+                $('.side-bar').addClass('active');
+                $('.menu-btn').css("visibility", "hidden");
+            });
+
+            // close button
+            $('.close-btn').click(function () {
+                $('.side-bar').removeClass('active');
+                $('.menu-btn').css("visibility", "visible");
+            });
+
+            //toggle sub-menus
+            $('.sub-btn').click(function () {
+                $(this).next('.sub-menu-drop').slideToggle();
+                $(this).find('dropdown-icon').toggle('rotate');
+            });
+        })
+    </script>
+
+    <script>
+        // close flash message
+        $('.exit-btn').click(function () {
+            $('.alert-warning').addClass('active');
+            $('.alert-success').addClass('active');
+        });
+
+        // set timeout for flash message
+        setTimeout(function () {
+            $('.alert-warning').fadeOut('slow');
+            $('.alert-success').fadeOut('slow');
+        }, 30000); //30 seconds
+
+    </script>
+
+<!--Javascript to plot bar charts, line charts, gauge meter and bubble charts using ChartJs-->
+<script>
+
+      Chart.defaults.font.family = "sans-serif";
+      Chart.defaults.font.size = 14;
+      Chart.defaults.color = "white";
+
+        // gauge meter
+        const gaugeNeedle = {
+            id: 'gaugeNeedle',
+            afterDatasetDraw(chart,args,options){
+                const {ctx, config, chartArea:{top,bottom,left,right,width,height}}=chart;
+                ctx.save();
+                const needleValue = total_count_data.datasets[0].needleValue;
+                const data = total_count_data.datasets[0].data;
+                const labels = total_count_data.labels;
+                // Find the index of the needleValue in the data array
+                const needleIndex = data.findIndex(value => value === needleValue);
+                // Get the corresponding label from the labels array
+                const needleLabel = labels[needleIndex];
+                const dataTotal = total_count_data.datasets[0].data.reduce((a, b) => a + b, 0);
+                const angle = Math.PI + ((1 / dataTotal) * (needleValue) * Math.PI);
+
+                const cx=width/2;
+                const cy=chart._metasets[0].data[0].y;
+               
+
+                //needle
+                ctx.translate(cx,cy);
+                ctx.rotate(angle);
+                ctx.beginPath();
+                ctx.moveTo(0,-2);
+                ctx.lineTo(height - (ctx.canvas.offsetTop+80) ,0);
+                ctx.lineTo(0,2);
+                ctx.fillStyle = 'white';
+                ctx.fill();
+
+                //needle dot
+                ctx.translate(-cx,-cy);
+                ctx.beginPath();
+                ctx.arc(cx,cy,5,0,10);
+                ctx.fill();
+                ctx.restore();
+
+                ctx.font = "20px Poppins, sans-serif";
+                ctx.fillStyle='white';
+                ctx.fillText(needleValue.toFixed(0) + '% ' + needleLabel, cx,cy+50);
+                ctx.textAlign='center';
+                ctx.restore();     
+            }
+        }
+        
+        var gauge = new Chart(document.getElementById("chartGauge"), {
+        type: 'doughnut',
+        data: total_count_data,
+        options: {
+            plugins:{
+                legend:{
+                    display:false
+                },
+                tooltip:{
+                 yAlign:'bottom',
+                 displayColors:false,
+                 callbacks:{
+                    label: function(tooltipItem,data,value){
+                        const tracker=tooltipItem.parsed.toFixed(1);
+                        return `Percent Dist: ${tracker} %`
+                        
+                    }
+                  }
+                }
+            }
+        },
+            plugins:[gaugeNeedle]
+        });        
+
+</script>
+
+
+    
+
+
+
+    <!--ionicons-->
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+    <script src="https://d3js.org/d3.v6.js"></script>
+    <script src="bubble.js"></script>
+</body>
+
+</html>

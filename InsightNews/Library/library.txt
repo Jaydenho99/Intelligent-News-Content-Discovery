@@ -1,0 +1,12 @@
+flask
+pymongo
+flask_cors
+timeago
+numpy
+flask_paginate
+wordcloud
+nltk
+pandas
+gensim
+pyLDAvis
+requests

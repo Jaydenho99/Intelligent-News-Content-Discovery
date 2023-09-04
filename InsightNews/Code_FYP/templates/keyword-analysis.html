@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width" , initial-scale="1.0">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <!--css file-->
+    <link rel="stylesheet" type="text/css" href="static\styles\style_main.css" />
+
+    <!--favicon-->
+    <link rel="shortcut-icon" href="static/image/favicon.svg" type="image/svg+xml">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <!--boxicon-->
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <title>Keyword Analysis</title>
+</head>
+
+
+<body id="top">
+
+    <!--header-->
+    <header class="header" data-header>
+        <div class="container">
+            <div class="overlay" data-overlay></div>
+
+            <a href="{{url_for('home')}}" class="logo">
+                <img src="static/image/insight-logo.png" class="web-logo" alt="Logo">
+            </a>
+
+            <div class="header-actions">
+                {% if not session['username'] %}
+                <a href="{{url_for('authenticate')}}">
+                    <button class="btn btn-primary">Sign In</button>
+                </a>
+                {% else %}
+                <ion-icon name="person-circle-outline" class="user-pic" onclick="toggleMenu()"></ion-icon>
+
+                <div class="sub-menu-wrap" id="subMenu">
+                    <div class="sub-menu">
+                        <div class="user-info">
+                            <ion-icon name="person-circle-outline"></ion-icon>
+                            <h2 class="user-name"><strong>{{session['username']}}</strong></h2>
+                        </div>
+                        <hr>
+
+                        <a href="{{ url_for('profile')}}" class="sub-menu-link">
+                            <ion-icon name="person-outline"></ion-icon>
+                            <p>User Profile</p>
+                            <span><ion-icon name="chevron-forward-outline"></ion-icon></span>
+                        </a>
+
+                        <a href="{{url_for('library')}}" class="sub-menu-link">
+                            <ion-icon name="library-outline"></ion-icon>
+                            <p>My Library</p>
+                            <span><ion-icon name="chevron-forward-outline"></ion-icon></span>
+                        </a>
+
+                        <a href="{{ url_for('logout')}}" class="sub-menu-link">
+                            <ion-icon name="log-out-outline"></ion-icon>
+                            <p>Logout</p>
+                            <span><ion-icon name="chevron-forward-outline"></ion-icon></span>
+                        </a>
+
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+
+            <button class="menu-open-btn" data-menu-open-btn>
+                <ion-icon name='reorder-two'></ion-icon>
+            </button>
+
+            <nav class="navbar" data-navbar>
+                <div class="navbar-top">
+                    <a href="main_page.html" class="logo">
+                        <img src="static/image/images/logo.svg" alt="InsightNews Logo">
+                    </a>
+
+                    <button class="menu-close-btn" data-menu-close-btn>
+                        <ion-icon name="close-outline"></ion-icon>
+                    </button>
+                </div>
+
+                <ul class="navbar-list">
+                    <li>
+                        <a href="{{url_for('home')}}" class="navbar-link">Home</a>
+                    </li>
+
+                    <li>
+                        <a href="{{url_for('keyword')}}" class="navbar-link">Discover Keyword/Phrases</a>
+                    </li>
+
+                    <li>
+                        <a href="#topic" class="navbar-link">Discover Topics</a>
+                        <ul class="dropdown">
+                            <li><a href="{{url_for('topic_visualize')}}">Topic Analysis Visualization ></a></li>
+                            <li><a href="{{url_for('topic')}}">Trending Tweets by Topics ></a></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a href="#multi-view" class="navbar-link">View Multi-Perspective Sentiment ▾</a>
+                        <ul class="dropdown">
+                            <li><a href="{{url_for('sentiment')}}">Topic Sentiment ></a></li>
+                            <li><a href="{{url_for('sentiment_comparison')}}">Topic Sentiment Comparison ></a></li>
+                        </ul>
+
+                    </li>
+                </ul>
+
+            </nav>
+        </div>
+
+        <!--Display successful and error messages-->
+        {% for category,message in get_flashed_messages(with_categories=true) %}
+        {% if message %}
+        <div class="alert-{{category}}">
+            <span>{{message}}</span>
+            <button class="exit-btn">
+                <ion-icon name="close-outline"></ion-icon>
+            </button>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </header>
+
+    <main>
+        <article>
+            <!--Flex Box for summary of keyword analysis-->
+            <section class="flex-box-analysis">
+                <div class="container">
+                    <div class="title-wrapper">
+                        <p class="section-subtitle">Discover Keywords/Phrases in Tweets</p>
+                        <h2 class="h2 section-title">Keywords/Phrases Analysis</h2>
+                    </div>
+
+                    <div class="flex-box-analysis">
+                        <div class="flexbox-first">
+                            <ion-icon name="analytics"></ion-icon>
+                            <h3 class="flexbox-title">Total Keywords Analyzed</h3>
+                            {% for item in keyword_summary %}
+                            <h2 class="flexbox-title"><strong>{{item['total_count']}}</strong></h2>
+                            {% endfor %}
+                        </div>
+                        <div class="flexbox-second">
+                            <ion-icon name="trending-up"></ion-icon>
+                            <h3 class="flexbox-title">Most Frequent Keyword</h3>
+                            {% for item in keyword_summary %}
+                            <h2 class="flexbox-title"><strong>"{{item['max_keyword_freq']}}"</strong></h2>
+                            {% endfor %}
+                        </div>
+                        <div class="flexbox-third">
+                            <ion-icon name="star"></ion-icon>
+                            <h3 class="flexbox-title">Highest Trending Score</h3>
+                            {% for item in keyword_summary %}
+                            <h2 class="flexbox-title"><strong>"{{item['max_keyword_trending']}}"</strong></h2>
+                            {% endfor %}
+                        </div>
+                        <div class="flexbox-fourth">
+                            <ion-icon name="today"></ion-icon>
+                            <h3 class="flexbox-title">Trending Keyword of the Day</h3>
+                            <h2 class="flexbox-title"><strong>"{{trending_keyword_today['keyword']}}"</strong></h2>
+
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!--Generated Search Table Results-->
+            <section class="search-results">
+                <div class="container">
+                    <form method="post" class="keyword-form">
+                        <input type="text" placeholder="Enter your preferred keyword..." name="search_string"
+                            class="keyword-field" required>
+                        <button type="submit" class="keyword-form-btn" name="search_button">Search</button>
+                    </form>
+                </div>
+
+                <!--Table-->
+                <div class="documentKeywords">
+                    <table>
+                        <thead>
+                            <tr>
+                                <td>Keyword</td>
+                                <td>Trending Score</td>
+                                <td>Frequency</td>
+                                <td>Sentiment</td>
+                                <td>Related Tweets</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in keyword_info %}
+                            <tr>
+                                <td class="keyword-table">{{ item['keyword'] }}</td>
+                                <td>{{ item['keyword_trending_score'] }}</td>
+                                <td>{{ item['current_total_frequency'] }}</td>
+                                <td>{{ item['sentiment'] }}</td>
+                                <td>
+                                    <h3 class="keyword-show" data-name="{{item['keyword']}}">
+                                        {% set news_count = item['news']|length %}
+                                        {{news_count}} Tweets News
+                                    </h3>
+                                </td>
+                            </tr>
+                            {% endfor %}
+
+                            {% if matching_keywords %}
+                            <h2 class="search-keyword-results">Search Results: <strong>"{{search_string}}"</strong></h2>
+
+                            {% for item in matching_keywords %}
+                            <tr>
+                                <td>{{ item['keyword'] }}</td>
+                                <td>{{ item['keyword_trending_score'] }}</td>
+                                <td>{{ item['current_total_frequency'] }}</td>
+                                <td>{{ item['sentiment'] }}</td>
+                                <td>
+                                    <h3 class="keyword-show-results" data-name="{{item['keyword']}}">
+                                        {% set news_count = item['news']|length %}
+                                        {{news_count}} Tweets News
+                                    </h3>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% else %}
+                            {% if not keyword_info %}
+                            <h2 class="search-keyword-results">No results found for <strong>"{{ search_string
+                                    }}"</strong></h2>
+                            {% endif %}
+                            {% endif %}
+
+                        </tbody>
+                    </table>
+                    {% if pagination %}
+                    <div class="pagination">
+                        {{ pagination.info }}
+                        {{ pagination.links }}
+                    </div>
+                    {% endif %}
+                </div>
+
+
+                <div class="products-preview">
+                    {% for item in keyword_info %}
+                    <div class="preview scroll" data-target="{{item['keyword']}}">
+                        <ion-icon name="close-outline" class="close-button-ion position"></ion-icon>
+                        {% for news in item['news'] %}
+                        <figure class="card-topic">
+                            <img src="{{news['imageURL']}}"
+                                onerror="this.onerror=null; this.src='static/image/insightnews-high-resolution-color-logo.png'"
+                                alt="">
+                        </figure>
+                        <h3>{{news['title']}}</h3>
+
+
+                        <div class="price-flex">
+                            <div class="trending">
+                                <ion-icon name="newspaper"></ion-icon>
+                                <data>{{news['source']}}</data>
+                            </div>
+                            <div class="trending">
+                                <ion-icon name="apps"></ion-icon>
+                                <data>{{news['type']}}</data>
+                            </div>
+                            <div class="trending">
+                                <ion-icon name="calendar-outline"></ion-icon>
+                                <data>{{news['timeDate']|format_datetime('%d %b %Y')}}</data>
+                            </div>
+
+                            <div class="trending">
+                                <ion-icon name="heart"></ion-icon>
+                                <data>{{news['favorite']}}</data>
+                            </div>
+
+
+                            <div class="trending">
+                                <ion-icon name="sync"></ion-icon>
+                                <data>{{news['retweet']}}</data>
+                            </div>
+
+                        </div>
+
+
+                        <div class="buttons space">
+                            <a href="{{ url_for('news_details',name=news['title'])}}">
+                                <button class="btn btn-primary">
+                                    <ion-icon name="book-outline"></ion-icon>
+                                    <span>Read More...</span>
+                                </button>
+                            </a>
+                        </div>
+
+
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+
+                    {% for item in matching_keywords %}
+                    <div class="preview scroll" data-target="{{item['keyword']}}">
+                        <ion-icon name="close-outline" class="close-button-ion position"></ion-icon>
+                        {% for news in item['news'] %}
+                        <figure class="card-topic">
+                            <img src="{{news['imageURL']}}"
+                                onerror="this.onerror=null; this.src='static/image/insightnews-high-resolution-color-logo.png'"
+                                alt="">
+                        </figure>
+                        <h3>{{news['title']}}</h3>
+
+
+                        <div class="price-flex">
+                            <div class="trending">
+                                <ion-icon name="newspaper"></ion-icon>
+                                <data>{{news['source']}}</data>
+                            </div>
+                            <div class="trending">
+                                <ion-icon name="apps"></ion-icon>
+                                <data>{{news['type']}}</data>
+                            </div>
+                            <div class="trending">
+                                <ion-icon name="calendar-outline"></ion-icon>
+                                <data>{{news['timeDate']|format_datetime('%d %b %Y')}}</data>
+                            </div>
+
+                            <div class="trending">
+                                <ion-icon name="heart"></ion-icon>
+                                <data>{{news['favorite']}}</data>
+                            </div>
+
+
+                            <div class="trending">
+                                <ion-icon name="sync"></ion-icon>
+                                <data>{{news['retweet']}}</data>
+                            </div>
+
+                        </div>
+
+                        <div class="buttons space">
+                            <a href="{{ url_for('news_details',name=news['title'])}}">
+                                <button class="btn btn-primary">
+                                    <ion-icon name="book-outline"></ion-icon>
+                                    <span>Read More...</span>
+                                </button>
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </article>
+    </main>
+
+    <!--footer-->
+    <footer class="footer">
+        <div class="footer-top">
+            <div class="container">
+                <div class="footer-brand-wrapper">
+                    <a href="{{url_for('home')}}" class="logo">
+                        <img src="static/image/insight-logo.png" class="web-logo" alt="Logo">
+                    </a>
+
+                    <ul class="footer-list">
+                        <li>
+                            <a href="{{url_for('home')}}" class="footer-link">Home</a>
+                        </li>
+
+                        <li>
+                            <a href="{{url_for('keyword')}}" class="navbar-link">Discover Keyword/Phrases</a>
+                        </li>
+
+                        <li>
+                            <a href="#topic" class="navbar-link">Discover Topics</a>
+                            <ul class="dropdown">
+                                <li><a href="{{url_for('topic_visualize')}}">Topic Analysis Visualization ></a></li>
+                                <li><a href="{{url_for('topic')}}">Trending Tweets by Topics ></a></li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            <a href="#multi-view" class="navbar-link">View Multi-Perspective Sentiment ▾</a>
+                            <ul class="dropdown">
+                                <li><a href="{{url_for('sentiment')}}">Topic Sentiment ></a></li>
+                                <li><a href="{{url_for('sentiment_comparison')}}">Topic Sentiment Comparison ></a></li>
+                            </ul>
+
+                        </li>
+
+                    </ul>
+                </div>
+
+                <div class="divider"></div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div class="container">
+                <p class="copyright">
+                    &copy; 2023 <a href="#">Ho Khum Leon</a>. All Rights Reserved
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!--Go To Top-->
+    <a href="#top" class="go-top" data-go-top>
+        <ion-icon name="chevron-up"></ion-icon>
+    </a>
+
+    <!--js script-->
+    <script src="../static/js/script_main.js"></script>
+
+
+    <!--JQuery CDN link-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+
+    <!--js script for profile sub-menu-->
+    <script>
+        let subMenu = document.getElementById("subMenu");
+        function toggleMenu() {
+            subMenu.classList.toggle("open-menu")
+        }
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            
+            //jquery to expand and collapse the sidebar
+            $('.menu-btn').click(function () {
+                $('.side-bar').addClass('active');
+                $('.menu-btn').css("visibility", "hidden");
+            });
+
+            // close button
+
+            $('.close-btn').click(function () {
+                $('.side-bar').removeClass('active');
+                $('.menu-btn').css("visibility", "visible");
+            });
+
+            //toggle sub-menus
+
+            $('.sub-btn').click(function () {
+                $(this).next('.sub-menu-drop').slideToggle();
+                $(this).find('dropdown-icon').toggle('rotate');
+            });
+        })
+    </script>
+
+    <script>
+        // close flash message
+        $('.exit-btn').click(function () {
+            $('.alert-warning').addClass('active');
+            $('.alert-success').addClass('active');
+        });
+
+        // set timeout for flash message
+        setTimeout(function () {
+            $('.alert-warning').fadeOut('slow');
+            $('.alert-success').fadeOut('slow');
+        }, 30000); //30 seconds
+
+    </script>
+
+    <!--ionicons-->
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Library</title>
+
+    <!--css file-->
+    <link rel="stylesheet" type="text/css" href="static\styles\style_main.css" />
+
+    <!--favicon-->
+    <link rel="shortcut-icon" href="static/image/favicon.svg" type="image/svg+xml">
+</head>
+
+<body id="#top">
+
+    <!--header-->
+    <header class="header" data-header>
+        <div class="container">
+            <div class="overlay" data-overlay></div>
+            <a href="{{url_for('home')}}" class="logo">
+                <img src="static/image/insight-logo.png" class="web-logo" alt="Logo">
+            </a>
+
+            <div class="header-actions">
+                {% if not session['username'] %}
+                <a href="{{url_for('authenticate')}}">
+                    <button class="btn btn-primary">Sign In</button>
+                </a>
+                {% else %}
+                <ion-icon name="person-circle-outline" class="user-pic" onclick="toggleMenu()"></ion-icon>
+
+                <div class="sub-menu-wrap" id="subMenu">
+                    <div class="sub-menu">
+                        <div class="user-info">
+                            <ion-icon name="person-circle-outline"></ion-icon>
+                            <h2 class="user-name"><strong>{{session['username']}}</strong></h2>
+                        </div>
+                        <hr>
+
+                        <a href="{{ url_for('profile')}}" class="sub-menu-link">
+                            <ion-icon name="person-outline"></ion-icon>
+                            <p>User Profile</p>
+                            <span><ion-icon name="chevron-forward-outline"></ion-icon></span>
+                        </a>
+
+                        <a href="{{url_for('library')}}" class="sub-menu-link">
+                            <ion-icon name="library-outline"></ion-icon>
+                            <p>My Library</p>
+                            <span><ion-icon name="chevron-forward-outline"></ion-icon></span>
+                        </a>
+
+                        <a href="{{ url_for('logout')}}" class="sub-menu-link">
+                            <ion-icon name="log-out-outline"></ion-icon>
+                            <p>Logout</p>
+                            <span><ion-icon name="chevron-forward-outline"></ion-icon></span>
+                        </a>
+
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+
+            <button class="menu-open-btn" data-menu-open-btn>
+                <ion-icon name='reorder-two'></ion-icon>
+            </button>
+
+            <!--Navigation bar-->
+            <nav class="navbar" data-navbar>
+                <div class="navbar-top">
+                    <a href="main_page.html" class="logo">
+                        <img src="static/image/images/logo.svg" alt="InsightNews Logo">
+                    </a>
+
+                    <button class="menu-close-btn" data-menu-close-btn>
+                        <ion-icon name="close-outline"></ion-icon>
+                    </button>
+                </div>
+
+                <ul class="navbar-list">
+                    <li>
+                        <a href="{{url_for('home')}}" class="navbar-link">Home</a>
+                    </li>
+
+                    <li>
+                        <a href="{{url_for('keyword')}}" class="navbar-link">Discover Keyword/Phrases</a>
+                    </li>
+
+                    <li>
+                        <a href="#topic" class="navbar-link">Discover Topics</a>
+                        <ul class="dropdown">
+                            <li><a href="{{url_for('topic_visualize')}}">Topic Analysis Visualization ></a></li>
+                            <li><a href="{{url_for('topic')}}">Trending Tweets by Topics ></a></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a href="#multi-view" class="navbar-link">View Multi-Perspective Sentiment ▾</a>
+                        <ul class="dropdown">
+                            <li><a href="{{url_for('sentiment')}}">Topic Sentiment ></a></li>
+                            <li><a href="{{url_for('sentiment_comparison')}}">Topic Sentiment Comparison ></a></li>
+                        </ul>
+
+                    </li>
+                </ul>
+
+            </nav>
+        </div>
+
+        <!--Display successful and error messages-->
+        {% for category,message in get_flashed_messages(with_categories=true) %}
+        {% if message %}
+        <div class="alert-{{category}}">
+            <span>{{message}}</span>
+            <button class="exit-btn">
+                <ion-icon name="close-outline"></ion-icon>
+            </button>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </header>
+
+    <main>
+        <article>
+            <!--Library to display the saved news contents-->
+            <section class="library">
+                <div class="container">
+                    <div class="title-wrapper">
+                        <p class="section-subtitle">Personal Collection</p>
+                        <h2 class="h2 section-title">Saved Library</h2>
+                    </div>
+
+                    <!--Display a list of saved news contents for selected user-->
+                    <ul class="movies-list">
+                        {% for news in news_info %}
+                        <li>
+                            <div class="movie-card">
+                                <a href="{{ url_for('news_details',name=news['newsTitle'])}}">
+                                    <figure class="card-banner">
+                                        <img src="{{news['newsImageURL']}}"
+                                            onerror="this.onerror=null; this.src='static/image/insightnews-high-resolution-color-logo.png'"
+                                            alt="{{news['newsTitle']}}">
+                                    </figure>
+                                </a>
+
+                                <div class="title-wrapper">
+                                    <a href="{{ url_for('news_details',name=news['newsTitle'])}}">
+                                        <h3 class="card-title">{{news['newsTitle']}}</h3>
+                                    </a>
+
+                                    <time datetime="2022">{{news['newsYearPublished']}}</time>
+                                </div>
+
+                                <div class="card-meta">
+                                    <div class="badge badge-outline">{{news['newsCategory']}}</div>
+
+                                    <!--Delete news contents-->
+                                    <div class="delete-section">
+                                        {% if session['username'] %}
+                                        <form method="post">
+                                            <input type="hidden" name="delete" value="{{news['newsTitle']}}">
+                                            <button type="submit" class="btn btn-primary" name="delete-article">
+                                                <ion-icon name="trash-outline"></ion-icon>
+                                                <span>Delete</span>
+                                            </button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+
+                                </div>
+
+                                <div class="card-meta-bot">
+                                    <div class="duration">
+                                        <ion-icon name="time-outline"></ion-icon>
+                                        <time datetime="PT137M">{{news['time_ago']}}</time>
+                                    </div>
+
+                                    {% if news['sentiment'] %}
+
+                                    <div class="rating">
+                                        <ion-icon name="happy-outline"></ion-icon>
+                                        <data>{{news['sentiment']}}</data>
+                                    </div>
+                                    {% endif %}
+
+                                    {% if news['newsTrendingScore'] %}
+                                    <div class="rating">
+                                        <ion-icon name="star"></ion-icon>
+                                        <data>{{news['newsTrendingScore']}}</data>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </section>
+
+        </article>
+    </main>
+
+    <!--Footer-->
+    <footer class="footer">
+        <div class="footer-top">
+            <div class="container">
+                <div class="footer-brand-wrapper">
+                    <a href="{{url_for('home')}}" class="logo">
+                        <img src="static/image/insight-logo.png" class="web-logo" alt="Logo">
+                    </a>
+
+                    <ul class="footer-list">
+                        <li>
+                            <a href="{{url_for('home')}}" class="footer-link">Home</a>
+                        </li>
+
+                        <li>
+                            <a href="{{url_for('keyword')}}" class="navbar-link">Discover Keyword/Phrases</a>
+                        </li>
+
+                        <li>
+                            <a href="#topic" class="navbar-link">Discover Topics</a>
+                            <ul class="dropdown">
+                                <li><a href="{{url_for('topic_visualize')}}">Topic Analysis Visualization ></a></li>
+                                <li><a href="{{url_for('topic')}}">Trending Tweets by Topics ></a></li>
+                            </ul>
+                        </li>
+
+                        <li>
+                            <a href="#multi-view" class="navbar-link">View Multi-Perspective Sentiment ▾</a>
+                            <ul class="dropdown">
+                                <li><a href="{{url_for('sentiment')}}">Topic Sentiment ></a></li>
+                                <li><a href="{{url_for('sentiment_comparison')}}">Topic Sentiment Comparison ></a></li>
+                            </ul>
+
+                        </li>
+
+                    </ul>
+                </div>
+
+                <div class="divider"></div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <div class="container">
+                <p class="copyright">
+                    &copy; 2023 <a href="#">Ho Khum Leon</a>. All Rights Reserved
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!--Go To Top-->
+
+    <a href="#top" class="go-top" data-go-top>
+        <ion-icon name="chevron-up"></ion-icon>
+    </a>
+
+    <!--js script-->
+    <script src="../static/js/script_main.js"></script>
+
+    <!--JQuery CDN link-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.3/jquery.min.js"></script>
+
+    <!--js script for profile sub-menu-->
+    <script>
+        let subMenu = document.getElementById("subMenu");
+        function toggleMenu() {
+            subMenu.classList.toggle("open-menu")
+        }
+    </script>
+
+    <script>
+        // close flash message
+        $('.exit-btn').click(function () {
+            $('.alert-warning').addClass('active');
+            $('.alert-success').addClass('active');
+        });
+
+        // set timeout for flash message
+        setTimeout(function () {
+            $('.alert-warning').fadeOut('slow');
+            $('.alert-success').fadeOut('slow');
+        }, 30000); //30 seconds
+
+    </script>
+
+    <!--ionicons-->
+    <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+
+</body>
+
+</html>
