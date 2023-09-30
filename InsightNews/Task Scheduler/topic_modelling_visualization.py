@@ -64,7 +64,7 @@ def preprocess_text(text):
     return text
 
 # Import the optimal LDA model
-lda_model_optimal = LdaModel.load('lda_model_file_25_5_2023')
+lda_model_optimal = LdaModel.load("C:/ContentNewsFYP/flask-server/static/LDA_model/lda_model_file_25_5_2023")
 lda_model_optimal
 
 
