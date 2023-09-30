@@ -52,7 +52,7 @@ db_tweets=db_news['tweets']
 
 
 # Import optimal LDA model
-lda_model_optimal = LdaModel.load('lda_model_file_25_5_2023')
+lda_model_optimal = LdaModel.load("C:/ContentNewsFYP/flask-server/static/LDA_model/lda_model_file_25_5_2023")
 
 # create an empty dataframe with columns for topic and keywords
 df_topic = pd.DataFrame(columns=['Topic', 'Keywords','Topic Name'])
@@ -327,7 +327,7 @@ for i in range(15):
         pass
 
 # Declare a webdriver to extract dynamic data
-DRIVER_PATH = '/path/to/chromedriver'
+DRIVER_PATH = "C:/Users/Leon/chromedriver.exe"
 driver = webdriver.Chrome(executable_path=DRIVER_PATH)
 driver.get('https://www.thestar.com.my/')
 
@@ -508,7 +508,7 @@ df_bernama=pd.DataFrame.from_dict(dict_data_bernama)
 
 
 # Declare a webdriver to extract dynamic data
-DRIVER_PATH = '/path/to/chromedriver'
+DRIVER_PATH = "C:/Users/Leon/chromedriver.exe"
 driver2 = webdriver.Chrome(executable_path=DRIVER_PATH)
 driver2.get('https://www.bernama.com/en/')
 
@@ -698,7 +698,7 @@ for i in range(15):
         pass
 
 # Declare a webdriver to extract dynamic data
-DRIVER_PATH = '/path/to/chromedriver'
+DRIVER_PATH = "C:/Users/Leon/chromedriver.exe"
 driver3 = webdriver.Chrome(executable_path=DRIVER_PATH)
 driver3.get('https://www.malaymail.com/')
 
